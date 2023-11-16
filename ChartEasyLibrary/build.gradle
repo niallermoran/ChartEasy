@@ -1,24 +1,14 @@
 plugins {
-    id "maven-publish"
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+
 }
 
-apply plugin: "maven-publish"
-group = 'com.github.niallermoran'
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-kapt'
 
 android {
-
-    publishing {
-
-        singleVariant("release") {
-            withSourcesJar()
-        }
-
-
-    }
-
-
 
     namespace 'com.niallmoran.charteasy'
     compileSdk 34
@@ -40,6 +30,13 @@ android {
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.3'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
     }
     buildTypes {
         release {
