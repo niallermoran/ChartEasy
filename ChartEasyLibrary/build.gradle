@@ -1,13 +1,34 @@
 plugins {
+    id "maven-publish"
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
 
+apply plugin: "maven-publish"
+group = 'com.github.niallermoran'
+
 android {
+
+    publishing {
+
+        singleVariant("release") {
+            withSourcesJar()
+        }
+
+
+    }
+
+
+
     namespace 'com.niallmoran.charteasy'
     compileSdk 34
 
     defaultConfig {
+
+        aarMetadata {
+            minCompileSdk = 25
+        }
+
         minSdk 25
         targetSdk 34
 
@@ -33,7 +54,11 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
 }
+
+
+
 
 dependencies {
 
