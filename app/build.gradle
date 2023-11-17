@@ -1,8 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'maven-publish' // 2. Add this line
-
 }
 
 apply plugin: 'com.android.application'

@@ -1,11 +1,25 @@
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
-apply plugin: 'com.vanniktech.maven.publish'
+apply plugin: 'maven-publish'
 
 android {
-    compileSdk 34
     namespace 'com.niallermoran.charteasy'
-    defaultConfig { minSdkVersion 21 }
+    defaultConfig {
+        aarMetadata {
+            minCompileSdk = 29
+        }
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+
+    }
+
+    compileSdk 34
+
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.3'
     }
@@ -16,8 +30,24 @@ android {
     buildFeatures {
         compose true
     }
+
+
 }
 
+publishing {
+
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.niallermoran'
+            artifactId = 'charteasy'
+            version = '0.1'
+
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+}
 
 dependencies {
 
@@ -34,6 +64,5 @@ dependencies {
     androidTestImplementation composeBom
     implementation 'androidx.compose.foundation:foundation'
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
-
 
 }
