@@ -1,31 +1,33 @@
-apply plugin: 'com.android.library'
-apply plugin: 'org.jetbrains.kotlin.android'
-apply plugin: 'maven-publish'
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
+}
+
+group = 'com.github.niallermoran'
+version = '0.1'
 
 android {
-    namespace 'com.niallermoran.charteasy'
+    namespace 'com.github.niallermoran.charts'
+    compileSdk 34
     defaultConfig {
-        aarMetadata {
-            minCompileSdk = 29
-        }
-    }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-            withJavadocJar()
-        }
-
+        minSdk 26
     }
 
     compileSdk 34
 
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.3'
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
     }
     buildFeatures {
         compose true
@@ -33,17 +35,15 @@ android {
 
 
 }
-
-publishing {
-
-    publications {
-        release(MavenPublication) {
-            groupId = 'com.niallermoran'
-            artifactId = 'charteasy'
-            version = '0.1'
-
-            afterEvaluate {
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
                 from components.release
+                groupId = 'com.github.niallermoran'
+                artifactId = 'charteasy'
+                version = '0.1'
             }
         }
     }
