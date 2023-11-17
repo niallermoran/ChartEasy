@@ -1,80 +1,22 @@
-buildscript {
-    ext.kotlin_version = '1.7.20'
-    repositories {
-        google()
-        mavenCentral()
-        mavenLocal()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.4'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
-
-plugins {
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
-    id 'maven-publish' // 2. Add this line
-}
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    namespace 'com.niallermoran.charteasy'
     compileSdk 34
-
-    defaultConfig {
-
-        aarMetadata {
-            minCompileSdk = 25
-        }
-
-        minSdk 25
-        targetSdk 34
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
-    }
-
-    buildFeatures {
-        compose true
-    }
+    namespace 'com.niallermoran.charteasy'
+    defaultConfig { minSdkVersion 21 }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.3'
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    publishing {
-        singleVariant('release') {
-            withSourcesJar()
-            withJavadocJar()
-        }
-    }
-
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)        // << --- ADD This
+    buildFeatures {
+        compose true
     }
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17            // << --- ADD This
-    targetCompatibility = JavaVersion.VERSION_17
-}
 
 dependencies {
 
@@ -94,24 +36,3 @@ dependencies {
 
 
 }
-
-
-publishing {
-    publications {
-        release(MavenPublication) {
-            groupId = 'com.github.niallermoran'
-            artifactId = 'com-niallermoran-charteasy'
-            version = "0.1"
-            pom {
-                description = 'alpha-0.1'
-            }
-            afterEvaluate {
-                from components.release
-            }
-        }
-    }
-    repositories {
-        mavenLocal()
-    }
-}
-

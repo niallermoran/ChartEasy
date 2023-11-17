@@ -1,4 +1,4 @@
-package com.niallmoran.charteasy
+package com.niallermoran.charteasy
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
