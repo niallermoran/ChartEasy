@@ -39,11 +39,17 @@ android {
         }
     }
 
+
     buildFeatures {
         compose true
     }
+
     composeOptions {
-        kotlinCompilerExtensionVersion '1.2.0'
+        kotlinCompilerExtensionVersion = "1.5.4"
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 
 

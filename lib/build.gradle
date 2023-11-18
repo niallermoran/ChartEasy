@@ -1,17 +1,21 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
-    id 'maven-publish'
 }
 
-group = 'com.github.niallermoran'
-version = '0.1'
 
 android {
     namespace 'com.github.niallermoran.charts'
     compileSdk 34
     defaultConfig {
         minSdk 26
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 
     compileSdk 34
@@ -29,25 +33,23 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
     buildFeatures {
         compose true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.4"
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+
 
 }
-afterEvaluate {
-    publishing {
-        publications {
-            // Creates a Maven publication called "release".
-            release(MavenPublication) {
-                from components.release
-                groupId = 'com.github.niallermoran'
-                artifactId = 'charteasy'
-                version = '0.1'
-            }
-        }
-    }
-}
+
 
 dependencies {
 

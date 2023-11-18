@@ -17,5 +17,6 @@ local.properties
 github.properties
 /*.log
 *.log
+.log
 gradle.properties
 ./gradle.properties
