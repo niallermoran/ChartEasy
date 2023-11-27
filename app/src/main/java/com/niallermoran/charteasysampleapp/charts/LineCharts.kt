@@ -3,9 +3,11 @@ package com.niallermoran.charteasysampleapp.charts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.niallermoran.charteasy.*
+import com.niallermoran.charteasysampleapp.model.AppSettings
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -18,29 +20,7 @@ import kotlin.time.ExperimentalTime
  * Creates a very simple line chart with all default configurations
  */
 @Composable
-fun LineChartSampleMinimal(modifier:Modifier = Modifier) {
-
-    val points = generateRandomIntegers()
-
-    /**
-     * Creates a chart with minimum configuration.
-     * Labels will be created for every point and the chart defaults to a line chart
-     */
-    ChartEasy(
-        modifier=modifier,
-        config = Config(
-            leftAxisConfig = AxisConfig(
-                dataPoints = points
-            )
-        )
-    )
-}
-
-/**
- * Creates a very simple line chart with some formatting
- */
-@Composable
-fun LineChartSampleFormatted(modifier:Modifier = Modifier) {
+fun LineChartSampleMinimal(modifier:Modifier = Modifier, appSettings: AppSettings) {
 
     val points = generateRandomIntegers()
 
@@ -53,14 +33,40 @@ fun LineChartSampleFormatted(modifier:Modifier = Modifier) {
         config = Config(
             leftAxisConfig = AxisConfig(
                 dataPoints = points,
-                tickColor = Color.DarkGray,
-                axisColor = Color.DarkGray,
-                lineColor = Color.Magenta,
-                fillColour = Color.Magenta
+                smoothLine = appSettings.smoothLineCharts,
+                showFillColour = appSettings.fillCharts
+            )
+        )
+    )
+}
+
+/**
+ * Creates a very simple line chart with some formatting
+ */
+@Composable
+fun LineChartSampleFormatted(modifier:Modifier = Modifier, appSettings: AppSettings) {
+
+    val points = generateRandomIntegers()
+
+    /**
+     * Creates a chart with minimum configuration.
+     * Labels will be created for every point and the chart defaults to a line chart
+     */
+    ChartEasy(
+        modifier=modifier,
+        config = Config(
+            leftAxisConfig = AxisConfig(
+                dataPoints = points,
+                tickColor = Color.Gray,
+                axisColor = Color.Gray,
+                lineColor = Color.Blue,
+                smoothLine = appSettings.smoothLineCharts,
+                showFillColour = appSettings.fillCharts,
+                fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
             ),
             bottomAxisConfig = BottomAxisConfig(
-                tickColor = Color.DarkGray,
-                axisColor = Color.DarkGray,
+                tickColor = Color.Gray,
+                axisColor = Color.Gray,
             )
         )
     )
@@ -70,7 +76,7 @@ fun LineChartSampleFormatted(modifier:Modifier = Modifier) {
  * Creates a very simple line chart with label formatting of time series data
  */
 @Composable
-fun LineChartTimeSeries(modifier:Modifier = Modifier) {
+fun LineChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings) {
 
     val points = generateTimeSeries()
 
@@ -83,14 +89,16 @@ fun LineChartTimeSeries(modifier:Modifier = Modifier) {
         config = Config(
             leftAxisConfig = AxisConfig(
                 dataPoints = points,
-                tickColor = Color.DarkGray,
-                axisColor = Color.DarkGray,
+                tickColor = Color.Gray,
+                axisColor = Color.Gray,
                 lineColor = Color.Blue,
-                fillColour = Color.Blue
+                smoothLine = appSettings.smoothLineCharts,
+                showFillColour = appSettings.fillCharts,
+                fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
             ),
             bottomAxisConfig = BottomAxisConfig(
-                tickColor = Color.DarkGray,
-                axisColor = Color.DarkGray
+                tickColor = Color.Gray,
+                axisColor = Color.Gray
             )
         ),
         formatBottomAxisLabel = { index, x, point ->

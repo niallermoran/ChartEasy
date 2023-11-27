@@ -1,5 +1,6 @@
 package com.niallermoran.charteasy
 
+import android.graphics.PointF
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -506,7 +507,7 @@ private fun DrawBarChart(config: Config) {
                                     if (config.leftAxisConfig.showFillColour) {
                                         drawPath(
                                             path = path,
-                                            color = config.leftAxisConfig.fillColour,
+                                            brush = config.leftAxisConfig.fillBrush,
                                             style = Fill,
                                             alpha = 0.3f,
                                         )
@@ -568,46 +569,89 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                     }
                     .drawWithCache {
 
-                        // path for line
-                        val path = Path()
+                        // get a list of graphic coordinates for the points
+                        val linePoints = ArrayList<PointF>()
+                        for (i in 0 until points.size) {
 
-                        // path for shape fill
-                        val fillPath = Path()
-                        fillPath.moveTo(0f, height)
+                            val point = points[i]
 
-                        for (i in 1..points.size) {
-                            val point = points[i - 1]
+                            // actual point add to path
                             val x = width * (point.xValue - xMin) / (xMax - xMin)
                             val y = height - (height * (point.yValue - yMin) / (yMax - yMin))
-
-                            fillPath.lineTo(x, y)
-
-                            when (i) {
-                                1 -> {
-                                    path.moveTo(x, y)
-                                }
-                                points.size -> {
-                                    path.lineTo(x, y)
-                                    fillPath.lineTo(width, height)
-                                }
-                                else -> {
-                                    path.lineTo(x, y)
-                                }
-                            }
+                            linePoints.add(PointF(x,y))
                         }
+
+                        // get a list of control points for Bezier curve
+                        val splinePoints1 = ArrayList<PointF>()
+                        val splinePoints2 = ArrayList<PointF>()
+                       // splinePoints1.add(PointF(linePoints[0].x, linePoints[0].y))
+                        for (i in 1 until points.size) {
+                            splinePoints1.add(PointF((linePoints[i].x + linePoints[i - 1].x) / 2, linePoints[i - 1].y))
+                            splinePoints2.add(PointF((linePoints[i].x + linePoints[i - 1].x) / 2, linePoints[i].y))
+                        }
+
+                        // path for shape fill
+                        val pathFill = Path()
+                        pathFill.moveTo(0f, height)
+
+                        // path for line
+                        val pathLine = Path()
+
+                        // path for spline
+                        val pathSpline = Path()
+
+                        // draw line and fill
+                        if( config.smoothLine )
+                        {
+                            pathFill.lineTo(linePoints.first().x, linePoints.first().y )
+                            pathSpline.moveTo(linePoints.first().x, linePoints.first().y)
+
+                            for( i in 1 until linePoints.size){
+                                pathSpline.cubicTo(
+                                    splinePoints1[i - 1].x, splinePoints1[i - 1].y,
+                                    splinePoints2[i-1].x, splinePoints2[i - 1].y,
+                                    linePoints[i].x, linePoints[i].y
+                                )
+
+                                pathFill.cubicTo(
+                                    splinePoints1[i - 1].x, splinePoints1[i - 1].y,
+                                    splinePoints2[i-1].x, splinePoints2[i - 1].y,
+                                    linePoints[i].x, linePoints[i].y
+                                )
+                            }
+
+                            pathFill.lineTo(width,height)
+                        }
+                        else {
+                            pathLine.moveTo(linePoints.first().x, linePoints.first().y)
+
+                            linePoints.forEachIndexed { index, pointF ->
+                                pathLine.lineTo(pointF.x, pointF.y)
+                                pathFill.lineTo(pointF.x, pointF.y)
+                            }
+
+                            pathFill.lineTo(width,height)
+                        }
+
 
                         onDrawBehind {
 
                             drawPath(
-                                path = path,
+                                path = pathLine,
+                                color = config.lineColor,
+                                style = Stroke(width = config.axisStrokeWidth.value)
+                            )
+
+                            drawPath(
+                                path = pathSpline,
                                 color = config.lineColor,
                                 style = Stroke(width = config.axisStrokeWidth.value)
                             )
 
                             if (config.showFillColour) {
                                 drawPath(
-                                    path = fillPath,
-                                    color = config.fillColour,
+                                    path = pathFill,
+                                    brush = config.fillBrush,
                                     style = Fill,
                                     alpha = 0.3f,
                                 )
@@ -665,11 +709,18 @@ data class BottomAxisConfig(
 data class AxisConfig(
 
     val showCircles: Boolean = true,
+
     val showFillColour: Boolean = true,
-    val fillColour: Color = Color.Gray,
+    val fillBrush: Brush = Brush.verticalGradient(listOf(Color.LightGray, Color.Gray)),
+
     val lineColor: Color = Color.DarkGray,
     val circleColor: Color = Color.Gray,
     val circleRadius: Dp = 8.dp,
+
+    /**
+     * If true draws a bezier curve through the points to smooth corners
+     */
+    val smoothLine: Boolean = true,
 
     /**
      * Defines the maximum number of labels to display, including the origin and max values

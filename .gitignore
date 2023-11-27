@@ -13,10 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
-/github.properties
-github.properties
 /*.log
 *.log
 .log
-gradle.properties
-./gradle.properties
+/lib/gradle.properties

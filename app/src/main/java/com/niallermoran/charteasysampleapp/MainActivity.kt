@@ -8,11 +8,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -22,6 +28,8 @@ import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
 import com.niallermoran.charteasysampleapp.charts.LineChartSampleFormatted
 import com.niallermoran.charteasysampleapp.charts.LineChartSampleMinimal
 import com.niallermoran.charteasysampleapp.charts.LineChartTimeSeries
+import com.niallermoran.charteasysampleapp.layouts.EasyCard
+import com.niallermoran.charteasysampleapp.model.AppSettings
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,62 +51,53 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SamplesCharts() {
 
+    var smoothLineCharts by rememberSaveable(){ mutableStateOf(true)}
+    var fillCharts by rememberSaveable(){ mutableStateOf(true)}
+
+
+    val settings = AppSettings(smoothLineCharts = smoothLineCharts, fillCharts = fillCharts)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .height(300.dp)
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(6.dp)
     )
     {
 
+        EasyCard(title="Options") {
 
-        ElevatedCard(
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 8.dp
-            ),
-        ) {
-            Text(
-                text = "Minimal Config and Random Values", modifier = Modifier
-                    .padding(2.dp)
-                    .fillMaxWidth(), textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.fillMaxWidth().height(2.dp).background(Color.LightGray))
-
-            LineChartSampleMinimal(modifier = Modifier.padding(12.dp))
+            Column() {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = smoothLineCharts,
+                        onCheckedChange = {
+                            smoothLineCharts = it
+                        })
+                    Text(text = "Smooth lines", modifier = Modifier.weight(1f))
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = fillCharts,
+                        onCheckedChange = {
+                            fillCharts = it
+                        })
+                    Text(text = "Show Fills", modifier = Modifier.weight(1f))
+                }
+            }
         }
 
-        ElevatedCard(
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 8.dp
-            ),
-        ) {
-            Text(
-                text = "Formatted and Random Values", modifier = Modifier
-                    .padding(2.dp)
-                    .fillMaxWidth(), textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.fillMaxWidth().height(2.dp).background(Color.LightGray))
-
-            LineChartSampleFormatted(modifier = Modifier.padding(12.dp))
+        EasyCard(title="Minimal Configuration with Random Data") {
+            LineChartSampleMinimal(modifier = Modifier.padding(12.dp), appSettings = settings)
         }
 
-        ElevatedCard(
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 8.dp
-            ),
-        ) {
-            Text(
-                text = "Time Series with Formatted Values", modifier = Modifier
-                    .padding(2.dp)
-                    .fillMaxWidth(), textAlign = TextAlign.Center
-            )
+        EasyCard(title="Formatted with Random Data") {
+            LineChartSampleFormatted(modifier = Modifier.padding(12.dp), appSettings = settings)
+        }
 
-            Spacer(modifier = Modifier.fillMaxWidth().height(2.dp).background(Color.LightGray))
-
-            LineChartTimeSeries(modifier = Modifier.padding(12.dp))
+        EasyCard(title="Time Series with Custom Labels and Random Data") {
+            LineChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings)
         }
 
     }
