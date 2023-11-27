@@ -348,11 +348,13 @@ private fun DrawBottomAxisTicksAndLabels(
     )
     {
 
+        val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
+
         // get min and max values to use for ticks
         val textMeasurer = rememberTextMeasurer()
         val points = config.leftAxisConfig.dataPoints
-        val minX = points.minOf { it.xValue }
-        val maxX = points.maxOf { it.xValue }
+        val minX = pointsSortedByX.minOf { it.xValue }
+        val maxX = pointsSortedByX.maxOf { it.xValue }
         val rangeX = maxX - minX
 
         // the label count for bar charts is the same as the number of bars
@@ -372,7 +374,7 @@ private fun DrawBottomAxisTicksAndLabels(
         val barWidth =
             width * config.chartConfig.barChartFraction / (points.size - 1 + config.chartConfig.barChartFraction)
 
-        points.forEachIndexed { index, dataPoint ->
+        pointsSortedByX.forEachIndexed { index, dataPoint ->
 
                 val labelText =  when (config.leftAxisConfig.type) {
                     ChartType.Bar ->  if( formatBottomAxisLabel == null ) dataPoint.xValue.toInt().toString() else  formatBottomAxisLabel(index, dataPoint.xValue, dataPoint)
@@ -439,8 +441,9 @@ private fun DrawBottomAxisTicksAndLabels(
 @Composable
 private fun DrawBarChart(config: Config) {
 
+    val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
     val density = LocalDensity.current
-    config.leftAxisConfig.dataPoints.let { points ->
+    pointsSortedByX.let { points ->
 
         // get min and max values to use for ticks
         val yMin = config.leftAxisConfig.minY ?: points.minOf { it.yValue }

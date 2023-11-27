@@ -20,9 +20,7 @@ import kotlin.time.ExperimentalTime
  * Creates a very simple line chart with all default configurations
  */
 @Composable
-fun LineChartSampleMinimal(modifier:Modifier = Modifier, appSettings: AppSettings) {
-
-    val points = generateRandomIntegers()
+fun LineChartSampleMinimal(modifier:Modifier = Modifier, appSettings: AppSettings, points: List<ChartPoint>, minY:Float? = null,  maxY:Float? = null) {
 
     /**
      * Creates a chart with minimum configuration.
@@ -34,7 +32,9 @@ fun LineChartSampleMinimal(modifier:Modifier = Modifier, appSettings: AppSetting
             leftAxisConfig = AxisConfig(
                 dataPoints = points,
                 smoothLine = appSettings.smoothLineCharts,
-                showFillColour = appSettings.fillCharts
+                showFillColour = appSettings.fillCharts,
+                minY = minY,
+                maxY = maxY
             )
         )
     )
@@ -44,11 +44,9 @@ fun LineChartSampleMinimal(modifier:Modifier = Modifier, appSettings: AppSetting
  * Creates a very simple line chart with some formatting
  */
 @Composable
-fun LineChartSampleFormatted(modifier:Modifier = Modifier, appSettings: AppSettings) {
+fun LineChartSampleFormatted(modifier:Modifier = Modifier, appSettings: AppSettings, points: List<ChartPoint>, minY:Float? = null,  maxY:Float? = null) {
 
-    val points = generateRandomIntegers()
-
-    /**
+      /**
      * Creates a chart with minimum configuration.
      * Labels will be created for every point and the chart defaults to a line chart
      */
@@ -63,6 +61,8 @@ fun LineChartSampleFormatted(modifier:Modifier = Modifier, appSettings: AppSetti
                 smoothLine = appSettings.smoothLineCharts,
                 showFillColour = appSettings.fillCharts,
                 fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
+                minY = minY,
+                maxY = maxY
             ),
             bottomAxisConfig = BottomAxisConfig(
                 tickColor = Color.Gray,
@@ -76,9 +76,7 @@ fun LineChartSampleFormatted(modifier:Modifier = Modifier, appSettings: AppSetti
  * Creates a very simple line chart with label formatting of time series data
  */
 @Composable
-fun LineChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings) {
-
-    val points = generateTimeSeries()
+fun LineChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings, points: List<ChartPoint>, minY:Float? = null,  maxY:Float? = null) {
 
     /**
      * Creates a chart with minimum configuration.
@@ -95,6 +93,104 @@ fun LineChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings) 
                 smoothLine = appSettings.smoothLineCharts,
                 showFillColour = appSettings.fillCharts,
                 fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
+                minY = minY,
+                maxY = maxY
+            ),
+            bottomAxisConfig = BottomAxisConfig(
+                tickColor = Color.Gray,
+                axisColor = Color.Gray
+            )
+        ),
+        formatBottomAxisLabel = { index, x, point ->
+            // x represents an epoch in milliseconds
+            val date = Date(x.toLong())
+            val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
+            dateFormatter.format(date)
+        }
+    )
+}
+
+
+
+/**
+ * Creates a very simple bar chart with label formatting of time series data
+ */
+@Composable
+fun MixedChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings,
+                         points: List<ChartPoint>,
+                         barPoints: List<ChartPoint>,
+                         minY:Float? = null,  maxY:Float? = null) {
+
+    /**
+     * Creates a chart with minimum configuration.
+     * Labels will be created for every point and the chart defaults to a line chart
+     */
+    ChartEasy(
+        modifier=modifier.padding(end=12.dp), // use some padding so last x-axis label is not clipped
+        config = Config(
+            leftAxisConfig = AxisConfig(
+                dataPoints = barPoints,
+                tickColor = Color.Gray,
+                axisColor = Color.Gray,
+                lineColor = Color.Blue,
+                smoothLine = appSettings.smoothLineCharts,
+                showFillColour = appSettings.fillCharts,
+                fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
+                type=ChartType.Bar,
+                minY = minY,
+                maxY=maxY
+            ),
+            rightAxisConfig = AxisConfig(
+                dataPoints = barPoints,
+                tickColor = Color.Gray,
+                axisColor = Color.Gray,
+                lineColor = Color.Blue,
+                smoothLine = appSettings.smoothLineCharts,
+                showFillColour = false,
+                type=ChartType.Line,
+                minY = minY,
+                maxY=maxY
+            ),
+            bottomAxisConfig = BottomAxisConfig(
+                tickColor = Color.Gray,
+                axisColor = Color.Gray
+            )
+        ),
+        formatBottomAxisLabel = { index, x, point ->
+            // x represents an epoch in milliseconds
+            val date = Date(x.toLong())
+            val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
+            dateFormatter.format(date)
+        }
+    )
+}
+
+
+
+/**
+ * Creates a very simple bar chart with label formatting of time series data
+ */
+@Composable
+fun BarChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings, points: List<ChartPoint>, minY:Float? = null,  maxY:Float? = null) {
+
+    /**
+     * Creates a chart with minimum configuration.
+     * Labels will be created for every point and the chart defaults to a line chart
+     */
+    ChartEasy(
+        modifier=modifier.padding(end=12.dp), // use some padding so last x-axis label is not clipped
+        config = Config(
+            leftAxisConfig = AxisConfig(
+                dataPoints = points,
+                tickColor = Color.Gray,
+                axisColor = Color.Gray,
+                lineColor = Color.Blue,
+                smoothLine = appSettings.smoothLineCharts,
+                showFillColour = appSettings.fillCharts,
+                fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
+                type=ChartType.Bar,
+                minY = minY,
+                maxY=maxY
             ),
             bottomAxisConfig = BottomAxisConfig(
                 tickColor = Color.Gray,
@@ -112,14 +208,17 @@ fun LineChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings) 
 
 
 @Composable
-private fun generateRandomIntegers(): ArrayList<ChartPoint> {
+fun generateRandomIntegers(): ArrayList<ChartPoint> {
+
+    val n = 6
+
     // generate some data
-    val randomX = List(10) { Random.nextInt(0,100) }
-    val randomY = List(10) { Random.nextInt(100, 10000) }
+    val randomX = List(n) { Random.nextInt(0,100) }
+    val randomY = List(n) { Random.nextInt(100, 10000) }
 
     // create the chart points
-    val points = ArrayList<ChartPoint>(10)
-    for (i in 0..9) {
+    val points = ArrayList<ChartPoint>(n)
+    for (i in 0..n-1) {
         points.add(
             i, ChartPoint(
                 xValue = randomX[i].toFloat(),
@@ -132,9 +231,9 @@ private fun generateRandomIntegers(): ArrayList<ChartPoint> {
 
 @OptIn(ExperimentalTime::class)
 @Composable
-private fun generateTimeSeries(): ArrayList<ChartPoint> {
+fun generateTimeSeries(): ArrayList<ChartPoint> {
 
-    val n = 8
+    val n = 6
 
     // get a 30 day date range
     val now = Date().time
