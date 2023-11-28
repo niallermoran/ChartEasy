@@ -2,12 +2,17 @@ package com.niallermoran.charteasy
 
 import android.graphics.PointF
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -31,173 +36,103 @@ fun ChartEasy(
     formatRightAxisLabel: ((Int, Float) -> String)? = null,
 ) {
 
-    val density = LocalDensity.current
-    val textMeasurer = rememberTextMeasurer()
+    if (config.pieChartConfig != null)
+        DrawPieChart(config = config, modifier = modifier)
+    else if (config.leftAxisConfig != null) {
+        DrawLineBarChart(
+            config,
+            formatLeftAxisLabel,
+            formatRightAxisLabel,
+            formatBottomAxisLabel,
+            modifier
+        )
+    } else {
+        throw Exception("The chart must have a leftAxisConfig or pieChartConfig defined as a minimum")
+    }
 
-    // take an x and y value to calculate the spans for the axis
-    val x = config.leftAxisConfig.dataPoints.maxOf { it.xValue }
-    val y = config.leftAxisConfig.dataPoints.maxOf { it.yValue }
-    val z =
-        if (config.rightAxisConfig != null) config.rightAxisConfig.dataPoints.maxOf { it.yValue } else 0f
 
-    val yText = if (formatLeftAxisLabel != null) formatLeftAxisLabel(0, y) else y.toInt().toString()
-    val zText = if (formatRightAxisLabel != null) formatRightAxisLabel(0, z) else z.toInt().toString()
-    val xText = if (formatBottomAxisLabel != null) formatBottomAxisLabel(0, x, null) else x.toInt().toString()
+}
 
-    val bottomAxisHeight = with(density) {
-        textMeasurer.measure(
-            text = xText,
-            style = config.bottomAxisConfig.labelStyle,
-            maxLines = config.bottomAxisConfig.labelMaxLines
-        ).size.height.toDp()
-    } + config.bottomAxisConfig.tickLength
+@Composable
+private fun DrawLineBarChart(
+    config: Config,
+    formatLeftAxisLabel: ((Int, Float) -> String)?,
+    formatRightAxisLabel: ((Int, Float) -> String)?,
+    formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)?,
+    modifier: Modifier
+) {
+    if (config.leftAxisConfig != null) {
+        val density = LocalDensity.current
+        val textMeasurer = rememberTextMeasurer()
 
-    val leftAxisWidth = with(density) {
-        textMeasurer.measure(
-            yText,
-            style = config.leftAxisConfig.labelStyle,
-            maxLines = 1
-        ).size.width.toDp()
-    }.plus(
-        config.leftAxisConfig.tickLength + config.leftAxisConfig.labelPaddingStart + config.leftAxisConfig.labelPaddingEnd
-    )
+        // take an x and y value to calculate the spans for the axis
+        val x = config.leftAxisConfig.dataPoints.maxOf { it.xValue }
+        val y = config.leftAxisConfig.dataPoints.maxOf { it.yValue }
+        val z =
+            if (config.rightAxisConfig != null) config.rightAxisConfig.dataPoints.maxOf { it.yValue } else 0f
 
-    val rightAxisWidth = if (config.rightAxisConfig != null)
-        with(density) {
+        val yText =
+            if (formatLeftAxisLabel != null) formatLeftAxisLabel(0, y) else y.toInt().toString()
+        val zText =
+            if (formatRightAxisLabel != null) formatRightAxisLabel(0, z) else z.toInt().toString()
+        val xText =
+            if (formatBottomAxisLabel != null) formatBottomAxisLabel(0, x, null) else x.toInt()
+                .toString()
+
+        val bottomAxisHeight = with(density) {
             textMeasurer.measure(
-                zText,
-                style = config.rightAxisConfig.labelStyle,
+                text = xText,
+                style = config.bottomAxisConfig.labelStyle,
+                maxLines = config.bottomAxisConfig.labelMaxLines
+            ).size.height.toDp()
+        } + config.bottomAxisConfig.tickLength
+
+        val leftAxisWidth = with(density) {
+            textMeasurer.measure(
+                yText,
+                style = config.leftAxisConfig.labelStyle,
                 maxLines = 1
             ).size.width.toDp()
         }.plus(
-            config.rightAxisConfig.tickLength + config.rightAxisConfig.labelPaddingStart + config.rightAxisConfig.labelPaddingEnd
+            config.leftAxisConfig.tickLength + config.leftAxisConfig.labelPaddingStart + config.leftAxisConfig.labelPaddingEnd
         )
-    else 0.dp
+
+        val rightAxisWidth = if (config.rightAxisConfig != null)
+            with(density) {
+                textMeasurer.measure(
+                    zText,
+                    style = config.rightAxisConfig.labelStyle,
+                    maxLines = 1
+                ).size.width.toDp()
+            }.plus(
+                config.rightAxisConfig.tickLength + config.rightAxisConfig.labelPaddingStart + config.rightAxisConfig.labelPaddingEnd
+            )
+        else 0.dp
 
 
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(config.chartConfig.height)
-    ) {
-
-        val plotAreaHeightDP = with(density) { constraints.maxHeight.toDp() } - bottomAxisHeight
-
-        Row()
-        {
-
-            /**
-             * left axis line, ticks and labels
-             */
-            BoxWithConstraints(
-                modifier = Modifier
-                    .height(plotAreaHeightDP)
-                    .width(leftAxisWidth)
-            ) {
-                val height = constraints.maxHeight
-                val width = constraints.maxWidth
-
-                // draw axis line
-                Canvas(modifier = Modifier
-                    .fillMaxSize()
-                    .drawWithCache {
-                        onDrawBehind {
-                            drawLine(
-                                color = config.leftAxisConfig.axisColor,
-                                start = Offset(width.toFloat(), 0f),
-                                end = Offset(width.toFloat(), height.toFloat()),
-                                strokeWidth = config.leftAxisConfig.axisStrokeWidth.toPx()
-                            )
-                        }
-                    }) {
-                }
-
-                YAxisTicksAndLabels(config.leftAxisConfig, formatLeftAxisLabel)
-
-            }
+        BoxWithConstraints(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(config.chartConfig.height)
+        ) {
 
 
-            /**
-             * Plot area and bottom axis
-             */
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f)
-            ) {
-
-                Column(modifier = Modifier.fillMaxWidth())
-                {
-                    /**
-                     * Plot area
-                     */
-                    BoxWithConstraints(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(config.chartConfig.plotAreaPadding)
-                    )
-                    {
-
-                        if (config.leftAxisConfig.type == ChartType.Line)
-                            DrawLineChart(config.leftAxisConfig, config.onPlotAreaTap)
-                        else
-                            DrawBarChart(config)
-
-                        config.rightAxisConfig?.let {
-                            if (it.type == ChartType.Line)
-                                DrawLineChart(config.rightAxisConfig, config.onPlotAreaTap)
-                            else
-                                DrawBarChart(config)
-                        }
-                    }
-
-                    /**
-                     * Bottom axis line, ticks and labels
-                     */
-                    BoxWithConstraints(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(bottomAxisHeight),
-                    )
-                    {
-
-                        val width = with(density) { constraints.maxWidth.toDp() }
-
-                        // draw axis line
-                        Canvas(modifier = Modifier
-                            .fillMaxSize()
-                            .drawWithCache {
-                                onDrawBehind {
-                                    drawLine(
-                                        color = config.bottomAxisConfig.tickColor,
-                                        start = Offset(0f, 0f),
-                                        end = Offset(width.toPx(), 0f),
-                                        strokeWidth = config.bottomAxisConfig.axisStrokeWidth.toPx()
-                                    )
-                                }
-                            }) {
-                        }
+            val plotAreaHeightDP = with(density) { constraints.maxHeight.toDp() } - bottomAxisHeight
 
 
-                        DrawBottomAxisTicksAndLabels(config, formatBottomAxisLabel)
+            Row()
+            {
 
-
-                    }
-                }
-            }
-
-
-            if (config.rightAxisConfig != null) {
                 /**
-                 * right axis line, ticks and labels
+                 * left axis line, ticks and labels
                  */
                 BoxWithConstraints(
                     modifier = Modifier
                         .height(plotAreaHeightDP)
-                        .width(rightAxisWidth)
+                        .width(leftAxisWidth)
                 ) {
                     val height = constraints.maxHeight
+                    val width = constraints.maxWidth
 
                     // draw axis line
                     Canvas(modifier = Modifier
@@ -205,27 +140,259 @@ fun ChartEasy(
                         .drawWithCache {
                             onDrawBehind {
                                 drawLine(
-                                    color = config.leftAxisConfig.lineColor,
-                                    start = Offset(0f, 0f),
-                                    end = Offset(0f, height.toFloat()),
-                                    strokeWidth = config.rightAxisConfig.axisStrokeWidth.toPx()
+                                    color = config.leftAxisConfig.axisColor,
+                                    start = Offset(width.toFloat(), 0f),
+                                    end = Offset(width.toFloat(), height.toFloat()),
+                                    strokeWidth = config.leftAxisConfig.axisStrokeWidth.toPx()
                                 )
                             }
                         }) {
                     }
 
-                    YAxisTicksAndLabels(
-                        config.rightAxisConfig,
-                        formatRightAxisLabel,
-                        axisType = AxisType.RIGHT
-                    )
+                    YAxisTicksAndLabels(config.leftAxisConfig, formatLeftAxisLabel)
 
                 }
+
+
+                /**
+                 * Plot area and bottom axis
+                 */
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(1f)
+                ) {
+
+                    Column(modifier = Modifier.fillMaxWidth())
+                    {
+                        /**
+                         * Plot area
+                         */
+                        BoxWithConstraints(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .padding(config.chartConfig.plotAreaPadding)
+                        )
+                        {
+
+                            if (config.leftAxisConfig.type == AxisType.Line)
+                                DrawLineChart(config.leftAxisConfig, config.onPlotAreaTap)
+                            else
+                                DrawBarChart(config)
+
+                            config.rightAxisConfig?.let {
+                                if (it.type == AxisType.Line)
+                                    DrawLineChart(config.rightAxisConfig, config.onPlotAreaTap)
+                                else
+                                    DrawBarChart(config)
+                            }
+                        }
+
+                        /**
+                         * Bottom axis line, ticks and labels
+                         */
+                        BoxWithConstraints(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(bottomAxisHeight),
+                        )
+                        {
+
+                            val width = with(density) { constraints.maxWidth.toDp() }
+
+                            // draw axis line
+                            Canvas(modifier = Modifier
+                                .fillMaxSize()
+                                .drawWithCache {
+                                    onDrawBehind {
+                                        drawLine(
+                                            color = config.bottomAxisConfig.tickColor,
+                                            start = Offset(0f, 0f),
+                                            end = Offset(width.toPx(), 0f),
+                                            strokeWidth = config.bottomAxisConfig.axisStrokeWidth.toPx()
+                                        )
+                                    }
+                                }) {
+                            }
+
+
+                            DrawBottomAxisTicksAndLabels(config, formatBottomAxisLabel)
+
+
+                        }
+                    }
+                }
+
+
+                if (config.rightAxisConfig != null) {
+                    /**
+                     * right axis line, ticks and labels
+                     */
+                    BoxWithConstraints(
+                        modifier = Modifier
+                            .height(plotAreaHeightDP)
+                            .width(rightAxisWidth)
+                    ) {
+                        val height = constraints.maxHeight
+
+                        // draw axis line
+                        Canvas(modifier = Modifier
+                            .fillMaxSize()
+                            .drawWithCache {
+                                onDrawBehind {
+                                    drawLine(
+                                        color = config.rightAxisConfig.axisColor,
+                                        start = Offset(0f, 0f),
+                                        end = Offset(0f, height.toFloat()),
+                                        strokeWidth = config.rightAxisConfig.axisStrokeWidth.toPx()
+                                    )
+                                }
+                            }) {
+                        }
+
+                        YAxisTicksAndLabels(
+                            config.rightAxisConfig,
+                            formatRightAxisLabel,
+                            showOnRight = true
+                        )
+
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+@Composable
+private fun DrawPieChart(config: Config, modifier: Modifier = Modifier) {
+
+    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+
+    if (config.pieChartConfig != null) {
+
+        BoxWithConstraints(
+            modifier = modifier
+                .height(config.chartConfig.height)
+                .fillMaxWidth()
+                .padding(config.pieChartConfig.padding),
+            contentAlignment = Alignment.Center
+        ) {
+
+            val height = constraints.maxHeight
+            val width = constraints.maxWidth
+            val diameter = if (width < height) width.toFloat() else height.toFloat()
+            val radius = diameter / 2
+            val points = config.pieChartConfig.dataPoints.sortedBy { it.yValue }
+            val sumOfY = points.sumOf { it.yValue.toDouble() }.toFloat()
+
+            Canvas(modifier = Modifier
+                .align(Alignment.Center)
+                .shadow(12.dp, shape = CircleShape)
+                .size(with(density) { diameter.toDp() }, with(density) { diameter.toDp() })
+                //        .background(Color.Red)
+                .drawWithCache {
+                    onDrawBehind {
+
+                        drawArc(
+                            color = Color.Black,
+                            topLeft = Offset(x = 0f, y = 0f),
+                            startAngle = 0f,
+                            sweepAngle = 360f,
+                            useCenter = true,
+                        )
+
+                        var startAngle = 0f
+
+                        points.forEachIndexed { index, chartPoint ->
+
+                            // calculate the angle of sweep
+                            val sweepAngle = 360f * (chartPoint.yValue / sumOfY)
+
+                            // draw the arc
+                            drawArc(
+                                color = chartPoint.colour,
+                                alpha = chartPoint.alpha,
+                                topLeft = Offset(x = 0f, y = 0f),
+                                startAngle = startAngle,
+                                sweepAngle = sweepAngle,
+                                useCenter = true,
+                                size = Size(diameter, diameter)
+                            )
+
+                            // cut the arc in two with a line half radius long.
+                            // at the endpoint of this bisector drop to x and y axis to find deltas
+                            // to calculate the offset for the label
+                            // angleA is the angle between the bisector and the x axis
+                            val angleA = startAngle + (sweepAngle / 2)
+                            val angleB = 90 - angleA
+                            val labelXOffset =  radius + (radius * Math.sin(angleB.toDouble() * 0.0174533) / 2).toFloat()
+                            val labelYOffset = radius + (radius * Math.sin(angleA.toDouble() * 0.0174533) / 2).toFloat()
+
+
+                            val measure = textMeasurer.measure(
+                                chartPoint.label,
+                                chartPoint.labelStyle,
+                                TextOverflow.Visible,
+                                maxLines = 1
+                            )
+
+
+                            val labelXOffsetOutside = radius + ( (measure.size.width +radius) * Math.sin(angleB.toDouble() * 0.0174533) ).toFloat()
+                            val labelYOffsetOutside =  radius +((measure.size.height + radius) * Math.sin(angleA.toDouble() * 0.0174533) ).toFloat()
+
+                            val labelXOffsetEdge = radius + (radius * Math.sin(angleB.toDouble() * 0.0174533) ).toFloat()
+                            val labelYOffsetEdge =  radius +(radius * Math.sin(angleA.toDouble() * 0.0174533) ).toFloat()
+
+                            when (chartPoint.labelPosition) {
+
+                                PieChartLabelPosition.INSIDE -> {
+                                    // draw the label
+                                    drawText(
+                                        topLeft = Offset(
+                                            labelXOffset - (measure.size.width / 2),
+                                            labelYOffset - (measure.size.height / 2)
+                                        ),
+                                        textLayoutResult = measure
+                                    )
+                                }
+
+                                PieChartLabelPosition.OUTSIDE -> {
+                                    drawText(
+                                        topLeft = Offset(
+                                            labelXOffsetOutside - (measure.size.width / 2),
+                                            labelYOffsetOutside - (measure.size.height / 2)
+                                        ),
+                                        textLayoutResult = measure
+                                    )
+                                }
+
+                                PieChartLabelPosition.EDGE -> {
+                                    drawText(
+                                        topLeft = Offset(
+                                            labelXOffsetEdge - (measure.size.width / 2),
+                                            labelYOffsetEdge - (measure.size.height / 2)
+                                        ),
+                                        textLayoutResult = measure
+                                    )
+                                }
+
+                                PieChartLabelPosition.INVISIBLE -> {}
+                            }
+
+
+                            startAngle += sweepAngle
+
+                        }
+
+
+                    }
+                }) {
             }
         }
-
     }
-
 
 }
 
@@ -233,7 +400,7 @@ fun ChartEasy(
 private fun YAxisTicksAndLabels(
     config: AxisConfig,
     formatLabel: ((Int, Float) -> String)? = null,
-    axisType: AxisType = AxisType.LEFT,
+    showOnRight: Boolean = false,
 ) {
     BoxWithConstraints(
         modifier = Modifier
@@ -288,25 +455,27 @@ private fun YAxisTicksAndLabels(
                             maxLines = 1
                         )
 
-                        val start = when (axisType) {
-                            AxisType.LEFT -> Offset(
+                        val start = when (showOnRight) {
+                            false -> Offset(
                                 width.toFloat() - config.tickLength.toPx(),
                                 y
                             )
-                            AxisType.RIGHT -> Offset(0f, y)
+
+                            true -> Offset(0f, y)
                         }
 
-                        val end = when (axisType) {
-                            AxisType.LEFT -> Offset(width.toFloat(), y)
-                            AxisType.RIGHT -> Offset(config.tickLength.toPx(), y)
+                        val end = when (showOnRight) {
+                            false -> Offset(width.toFloat(), y)
+                            true -> Offset(config.tickLength.toPx(), y)
                         }
 
-                        val topLeft = when (axisType) {
-                            AxisType.LEFT -> Offset(
+                        val topLeft = when (showOnRight) {
+                            false -> Offset(
                                 width.toFloat() - (measure.size.width) - config.labelPaddingEnd.toPx() - config.tickLength.toPx(),
                                 y - measure.size.height.toFloat() / 2
                             )
-                            AxisType.RIGHT -> Offset(
+
+                            true -> Offset(
                                 config.tickLength.toPx() + config.labelPaddingStart.toPx(),
                                 y - measure.size.height.toFloat() / 2
                             )
@@ -348,42 +517,50 @@ private fun DrawBottomAxisTicksAndLabels(
     )
     {
 
-        val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
+        if (config.leftAxisConfig != null) {
+            val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
 
-        // get min and max values to use for ticks
-        val textMeasurer = rememberTextMeasurer()
-        val points = config.leftAxisConfig.dataPoints
-        val minX = pointsSortedByX.minOf { it.xValue }
-        val maxX = pointsSortedByX.maxOf { it.xValue }
-        val rangeX = maxX - minX
+            // get min and max values to use for ticks
+            val textMeasurer = rememberTextMeasurer()
+            val points = config.leftAxisConfig.dataPoints
+            val minX = pointsSortedByX.minOf { it.xValue }
+            val maxX = pointsSortedByX.maxOf { it.xValue }
+            val rangeX = maxX - minX
 
-        // the label count for bar charts is the same as the number of bars
-        val labelCount = if (config.leftAxisConfig.type == ChartType.Bar) points.size else {
-            when (config.bottomAxisConfig.maxNumberOfLabelsToDisplay) {
-                null -> if (config.leftAxisConfig.type == ChartType.Bar) points.size else points.size - 1
-                else -> config.bottomAxisConfig.maxNumberOfLabelsToDisplay
+            // the label count for bar charts is the same as the number of bars
+            val labelCount = if (config.leftAxisConfig.type == AxisType.Bar) points.size else {
+                when (config.bottomAxisConfig.maxNumberOfLabelsToDisplay) {
+                    null -> if (config.leftAxisConfig.type == AxisType.Bar) points.size else points.size - 1
+                    else -> config.bottomAxisConfig.maxNumberOfLabelsToDisplay
+                }
             }
-        }
 
-        val evenX = rangeX / (labelCount - 1)
-        val width = constraints.maxWidth.toFloat()
-        val evenSpace = width / (labelCount - 1)
-        val labelMap = Hashtable<Float, String>()
+            val evenX = rangeX / (labelCount - 1)
+            val width = constraints.maxWidth.toFloat()
+            val evenSpace = width / (labelCount - 1)
+            val labelMap = Hashtable<Float, String>()
 
-        // get bar width for bar chart
-        val barWidth =
-            width * config.chartConfig.barChartFraction / (points.size - 1 + config.chartConfig.barChartFraction)
+            // get bar width for bar chart
+            val barWidth =
+                width * config.chartConfig.barChartFraction / (points.size - 1 + config.chartConfig.barChartFraction)
 
-        pointsSortedByX.forEachIndexed { index, dataPoint ->
+            pointsSortedByX.forEachIndexed { index, dataPoint ->
 
-                val labelText =  when (config.leftAxisConfig.type) {
-                    ChartType.Bar ->  if( formatBottomAxisLabel == null ) dataPoint.xValue.toInt().toString() else  formatBottomAxisLabel(index, dataPoint.xValue, dataPoint)
-                    ChartType.Line -> if( formatBottomAxisLabel == null ) (minX + evenX * index).toInt().toString() else formatBottomAxisLabel(index, minX + evenX * index, dataPoint)
+                val labelText = when (config.leftAxisConfig.type) {
+                    AxisType.Bar -> if (formatBottomAxisLabel == null) dataPoint.xValue.toInt()
+                        .toString() else formatBottomAxisLabel(index, dataPoint.xValue, dataPoint)
+
+                    AxisType.Line -> if (formatBottomAxisLabel == null) (minX + evenX * index).toInt()
+                        .toString() else formatBottomAxisLabel(
+                        index,
+                        minX + evenX * index,
+                        dataPoint
+                    )
                 }
 
                 if (labelText != "") {
                     var xDistance = evenSpace * index
-                    if (config.leftAxisConfig.type == ChartType.Bar) {
+                    if (config.leftAxisConfig.type == AxisType.Bar) {
                         xDistance =
                             if (index == 0)
                                 barWidth / 2
@@ -394,45 +571,46 @@ private fun DrawBottomAxisTicksAndLabels(
                     labelMap[xDistance] = labelText
                 }
 
-        }
+            }
 
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .drawWithCache {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .drawWithCache {
 
-                onDrawWithContent {
+                    onDrawWithContent {
 
-                    labelMap.forEach { x, labelText ->
+                        labelMap.forEach { x, labelText ->
 
-                        val measure = textMeasurer.measure(
-                            labelText,
-                            config.bottomAxisConfig.labelStyle,
-                            config.bottomAxisConfig.labelOverflow,
-                            maxLines = config.bottomAxisConfig.labelMaxLines
-                        )
+                            val measure = textMeasurer.measure(
+                                labelText,
+                                config.bottomAxisConfig.labelStyle,
+                                config.bottomAxisConfig.labelOverflow,
+                                maxLines = config.bottomAxisConfig.labelMaxLines
+                            )
 
-                        drawLine(
-                            color = config.bottomAxisConfig.tickColor,
-                            start = Offset(x, 0f),
-                            end = Offset(x, config.bottomAxisConfig.tickLength.toPx()),
-                            strokeWidth = config.bottomAxisConfig.tickStrokeWidth.toPx()
-                        )
+                            drawLine(
+                                color = config.bottomAxisConfig.tickColor,
+                                start = Offset(x, 0f),
+                                end = Offset(x, config.bottomAxisConfig.tickLength.toPx()),
+                                strokeWidth = config.bottomAxisConfig.tickStrokeWidth.toPx()
+                            )
 
-                        drawText(
-                            topLeft = Offset(
-                                x - (measure.size.width / 2),
-                                config.bottomAxisConfig.tickLength.toPx()
-                            ),
-                            textLayoutResult = measure,
-                            color = config.bottomAxisConfig.tickColor
-                        )
+                            drawText(
+                                topLeft = Offset(
+                                    x - (measure.size.width / 2),
+                                    config.bottomAxisConfig.tickLength.toPx()
+                                ),
+                                textLayoutResult = measure,
+                                color = config.bottomAxisConfig.tickColor
+                            )
+                        }
+
                     }
 
                 }
+            ) {
 
             }
-        ) {
-
         }
     }
 }
@@ -441,93 +619,95 @@ private fun DrawBottomAxisTicksAndLabels(
 @Composable
 private fun DrawBarChart(config: Config) {
 
-    val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
-    val density = LocalDensity.current
-    pointsSortedByX.let { points ->
+    if (config.leftAxisConfig != null) {
+        val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
+        val density = LocalDensity.current
+        pointsSortedByX.let { points ->
 
-        // get min and max values to use for ticks
-        val yMin = config.leftAxisConfig.minY ?: points.minOf { it.yValue }
-        val yMax = config.leftAxisConfig.maxY ?: points.maxOf { it.yValue }
+            // get min and max values to use for ticks
+            val yMin = config.leftAxisConfig.minY ?: points.minOf { it.yValue }
+            val yMax = config.leftAxisConfig.maxY ?: points.maxOf { it.yValue }
 
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
 
-            val height = constraints.maxHeight.toFloat()
-            val width = constraints.maxWidth.toFloat()
-            val heightDP = with(density) { height.toDp() }
+                val height = constraints.maxHeight.toFloat()
+                val width = constraints.maxWidth.toFloat()
+                val heightDP = with(density) { height.toDp() }
 
-            // get bar width for bar chart
-            val barWidth =
-                width * config.chartConfig.barChartFraction / (points.size - 1 + config.chartConfig.barChartFraction)
-            val barWidthDP = with(density) { barWidth.toDp() }
+                // get bar width for bar chart
+                val barWidth =
+                    width * config.chartConfig.barChartFraction / (points.size - 1 + config.chartConfig.barChartFraction)
+                val barWidthDP = with(density) { barWidth.toDp() }
 
-            // space between bars
-            val space = (barWidth / config.chartConfig.barChartFraction) - barWidth
-            val spaceDP = with(density) { space.toDp() }
+                // space between bars
+                val space = (barWidth / config.chartConfig.barChartFraction) - barWidth
+                val spaceDP = with(density) { space.toDp() }
 
-            // stack canvases to the right to draw the bars
-            Row {
+                // stack canvases to the right to draw the bars
+                Row {
 
-                points.forEachIndexed { index, chartPoint ->
+                    points.forEachIndexed { index, chartPoint ->
 
-                    // add the space between bars
-                    if (index > 0)
-                        Spacer(modifier = Modifier.size(width = spaceDP, height = heightDP))
+                        // add the space between bars
+                        if (index > 0)
+                            Spacer(modifier = Modifier.size(width = spaceDP, height = heightDP))
 
-                    // create a path to draw the bar on the canvas
-                    val path = Path()
+                        // create a path to draw the bar on the canvas
+                        val path = Path()
 
-                    // calculate the bar height relative to box
-                    val y = height - (height * (chartPoint.yValue - yMin) / (yMax - yMin))
+                        // calculate the bar height relative to box
+                        val y = height - (height * (chartPoint.yValue - yMin) / (yMax - yMin))
 
-                    path.moveTo(0f, height)
-                    path.lineTo(0f, y)
-                    path.lineTo(barWidth, y)
-                    path.lineTo(barWidth, height)
+                        path.moveTo(0f, height)
+                        path.lineTo(0f, y)
+                        path.lineTo(barWidth, y)
+                        path.lineTo(barWidth, height)
 
-                    // create a canvas to draw the bar
-                    Canvas(
-                        modifier = Modifier
-                            .width(barWidthDP)
-                            .fillMaxHeight()
-                            .pointerInput(key1 = Unit) {
-                                detectTapGestures(
-                                    onTap = {
-                                        val lambda = config.onPlotAreaTap
-                                        if (lambda != null)
-                                            lambda(chartPoint)
-                                    }
-                                )
-                            }
-                            .drawWithCache {
-
-                                onDrawBehind {
-                                    drawPath(
-                                        path = path,
-                                        color = config.leftAxisConfig.lineColor,
-                                        style = Stroke(width = config.leftAxisConfig.axisStrokeWidth.value)
+                        // create a canvas to draw the bar
+                        Canvas(
+                            modifier = Modifier
+                                .width(barWidthDP)
+                                .fillMaxHeight()
+                                .pointerInput(key1 = Unit) {
+                                    detectTapGestures(
+                                        onTap = {
+                                            val lambda = config.onPlotAreaTap
+                                            if (lambda != null)
+                                                lambda(chartPoint)
+                                        }
                                     )
+                                }
+                                .drawWithCache {
 
-                                    if (config.leftAxisConfig.showFillColour) {
+                                    onDrawBehind {
                                         drawPath(
                                             path = path,
-                                            brush = config.leftAxisConfig.fillBrush,
-                                            style = Fill,
-                                            alpha = 0.3f,
+                                            color = config.leftAxisConfig.lineColor,
+                                            style = Stroke(width = config.leftAxisConfig.axisStrokeWidth.value)
                                         )
-                                    }
 
+                                        if (config.leftAxisConfig.showFillColour) {
+                                            drawPath(
+                                                path = path,
+                                                brush = config.leftAxisConfig.fillBrush,
+                                                style = Fill,
+                                                alpha = 0.3f,
+                                            )
+                                        }
+
+                                    }
                                 }
-                            }
-                    ) {
+                        ) {
+
+                        }
 
                     }
-
                 }
+
+
             }
 
-
         }
-
     }
 
 }
@@ -581,16 +761,26 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                             // actual point add to path
                             val x = width * (point.xValue - xMin) / (xMax - xMin)
                             val y = height - (height * (point.yValue - yMin) / (yMax - yMin))
-                            linePoints.add(PointF(x,y))
+                            linePoints.add(PointF(x, y))
                         }
 
                         // get a list of control points for Bezier curve
                         val splinePoints1 = ArrayList<PointF>()
                         val splinePoints2 = ArrayList<PointF>()
-                       // splinePoints1.add(PointF(linePoints[0].x, linePoints[0].y))
+                        // splinePoints1.add(PointF(linePoints[0].x, linePoints[0].y))
                         for (i in 1 until points.size) {
-                            splinePoints1.add(PointF((linePoints[i].x + linePoints[i - 1].x) / 2, linePoints[i - 1].y))
-                            splinePoints2.add(PointF((linePoints[i].x + linePoints[i - 1].x) / 2, linePoints[i].y))
+                            splinePoints1.add(
+                                PointF(
+                                    (linePoints[i].x + linePoints[i - 1].x) / 2,
+                                    linePoints[i - 1].y
+                                )
+                            )
+                            splinePoints2.add(
+                                PointF(
+                                    (linePoints[i].x + linePoints[i - 1].x) / 2,
+                                    linePoints[i].y
+                                )
+                            )
                         }
 
                         // path for shape fill
@@ -604,28 +794,26 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                         val pathSpline = Path()
 
                         // draw line and fill
-                        if( config.smoothLine )
-                        {
-                            pathFill.lineTo(linePoints.first().x, linePoints.first().y )
+                        if (config.smoothLine) {
+                            pathFill.lineTo(linePoints.first().x, linePoints.first().y)
                             pathSpline.moveTo(linePoints.first().x, linePoints.first().y)
 
-                            for( i in 1 until linePoints.size){
+                            for (i in 1 until linePoints.size) {
                                 pathSpline.cubicTo(
                                     splinePoints1[i - 1].x, splinePoints1[i - 1].y,
-                                    splinePoints2[i-1].x, splinePoints2[i - 1].y,
+                                    splinePoints2[i - 1].x, splinePoints2[i - 1].y,
                                     linePoints[i].x, linePoints[i].y
                                 )
 
                                 pathFill.cubicTo(
                                     splinePoints1[i - 1].x, splinePoints1[i - 1].y,
-                                    splinePoints2[i-1].x, splinePoints2[i - 1].y,
+                                    splinePoints2[i - 1].x, splinePoints2[i - 1].y,
                                     linePoints[i].x, linePoints[i].y
                                 )
                             }
 
-                            pathFill.lineTo(width,height)
-                        }
-                        else {
+                            pathFill.lineTo(width, height)
+                        } else {
                             pathLine.moveTo(linePoints.first().x, linePoints.first().y)
 
                             linePoints.forEachIndexed { index, pointF ->
@@ -633,7 +821,7 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                                 pathFill.lineTo(pointF.x, pointF.y)
                             }
 
-                            pathFill.lineTo(width,height)
+                            pathFill.lineTo(width, height)
                         }
 
 
@@ -708,6 +896,19 @@ data class BottomAxisConfig(
     val labelMaxLines: Int = 1,
 )
 
+data class PieChartConfig(
+
+    /**
+     * The data points used to plot a chart.
+     */
+    var dataPoints: List<PiePoint>,
+
+    /**
+     * The padding around the piechart. Use this to ensure your labels display as expected
+     */
+    var padding: PaddingValues = PaddingValues(12.dp),
+)
+
 
 data class AxisConfig(
 
@@ -751,7 +952,7 @@ data class AxisConfig(
     /**
      * Set the type of chart to draw for the left axis values
      */
-    val type: ChartType = ChartType.Line,
+    val type: AxisType = AxisType.Line,
     val tickColor: Color = Color.Black,
     val tickLength: Dp = 10.dp,
 
@@ -814,19 +1015,35 @@ data class ChartPoint(
     val key: String? = null,
 )
 
+data class PiePoint(
+    val label: String,
+    val yValue: Float,
+    val labelPosition: PieChartLabelPosition,
+    val colour: Color,
+    val labelStyle: TextStyle = TextStyle(
+        fontSize = 16.sp,
+        textAlign = TextAlign.Center,
+        background = Color.Transparent,
+    ),
+    val alpha:Float = 0.9f
+)
 
 data class Config(
     val chartConfig: ChartConfig = ChartConfig(),
-    val leftAxisConfig: AxisConfig,
+    val leftAxisConfig: AxisConfig? = null,
     val rightAxisConfig: AxisConfig? = null,
+    val pieChartConfig: PieChartConfig? = null,
     val bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
     val onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
 )
 
-enum class ChartType {
+/**
+ * The type of axis to use for left or right axis on a line/bar chart
+ */
+enum class AxisType {
     Line, Bar
 }
 
-private enum class AxisType {
-    LEFT, RIGHT
+enum class PieChartLabelPosition {
+    INSIDE, OUTSIDE, EDGE, INVISIBLE
 }

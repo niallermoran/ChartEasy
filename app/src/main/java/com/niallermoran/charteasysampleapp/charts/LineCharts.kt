@@ -136,7 +136,7 @@ fun MixedChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings,
                 smoothLine = appSettings.smoothLineCharts,
                 showFillColour = appSettings.fillCharts,
                 fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
-                type=ChartType.Bar,
+                type=AxisType.Bar,
                 minY = minY,
                 maxY=maxY
             ),
@@ -147,7 +147,7 @@ fun MixedChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings,
                 lineColor = Color.Blue,
                 smoothLine = appSettings.smoothLineCharts,
                 showFillColour = false,
-                type=ChartType.Line,
+                type=AxisType.Line,
                 minY = minY,
                 maxY=maxY
             ),
@@ -161,6 +161,31 @@ fun MixedChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings,
             val date = Date(x.toLong())
             val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
             dateFormatter.format(date)
+        }
+    )
+}
+
+
+/**
+ * Creates a very simple pie chart with label formatting of time series data
+ */
+@Composable
+fun PieChart(modifier:Modifier = Modifier, appSettings: AppSettings, points: List<PiePoint>) {
+
+    /**
+     * Creates a chart with minimum configuration.
+     * Labels will be created for every point and the chart defaults to a line chart
+     */
+    ChartEasy(
+        modifier=modifier.padding(end=12.dp), // use some padding so last x-axis label is not clipped
+        config = Config(
+            pieChartConfig = PieChartConfig(
+                dataPoints = points,
+            )
+        ),
+        formatBottomAxisLabel = { index, x, point ->
+            // x represents an epoch in milliseconds
+           x.toString()
         }
     )
 }
@@ -188,7 +213,7 @@ fun BarChartTimeSeries(modifier:Modifier = Modifier, appSettings: AppSettings, p
                 smoothLine = appSettings.smoothLineCharts,
                 showFillColour = appSettings.fillCharts,
                 fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
-                type=ChartType.Bar,
+                type= AxisType.Bar,
                 minY = minY,
                 maxY=maxY
             ),
@@ -249,6 +274,28 @@ fun generateTimeSeries(): ArrayList<ChartPoint> {
         points.add(
             i, ChartPoint(
                 xValue = randomX[i].toFloat(),
+                yValue = randomY[i].toFloat()
+            )
+        )
+    }
+    return points
+}
+
+
+@OptIn(ExperimentalTime::class)
+@Composable
+fun generatePieData(): ArrayList<ChartPoint> {
+
+    val n = 6
+
+    val randomY = List(n) { Random.nextDouble(100.0, 125.0) }
+
+    // create the chart points
+    val points = ArrayList<ChartPoint>(n)
+    for (i in 0..n-1) {
+        points.add(
+            i, ChartPoint(
+                xValue = i.toFloat(),
                 yValue = randomY[i].toFloat()
             )
         )

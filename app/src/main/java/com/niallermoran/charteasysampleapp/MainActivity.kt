@@ -21,19 +21,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.niallermoran.charteasy.PieChartLabelPosition
+import com.niallermoran.charteasy.PiePoint
 import com.niallermoran.charteasysampleapp.charts.BarChartTimeSeries
 import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
 import com.niallermoran.charteasysampleapp.charts.LineChartSampleFormatted
 import com.niallermoran.charteasysampleapp.charts.LineChartSampleMinimal
 import com.niallermoran.charteasysampleapp.charts.LineChartTimeSeries
 import com.niallermoran.charteasysampleapp.charts.MixedChartTimeSeries
+import com.niallermoran.charteasysampleapp.charts.PieChart
 import com.niallermoran.charteasysampleapp.charts.generateRandomIntegers
 import com.niallermoran.charteasysampleapp.charts.generateTimeSeries
 import com.niallermoran.charteasysampleapp.layouts.EasyCard
 import com.niallermoran.charteasysampleapp.model.AppSettings
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,6 +62,16 @@ fun SamplesCharts() {
 
     val points = generateRandomIntegers()
     val timeSeries = generateTimeSeries()
+    val piePoints = listOf<PiePoint>(
+        PiePoint(label = "Jan", yValue = Random.nextFloat() * 100, colour = Color.Red, labelPosition = PieChartLabelPosition.INSIDE ),
+        PiePoint(label = "Feb", yValue = Random.nextFloat() * 100, colour = Color.Blue, labelPosition = PieChartLabelPosition.INSIDE ),
+        PiePoint(label = "Mar", yValue = Random.nextFloat() * 100, colour = Color.Green, labelPosition = PieChartLabelPosition.INSIDE ),
+        PiePoint(label = "Apr", yValue = Random.nextFloat() * 100, colour = Color.Yellow, labelPosition = PieChartLabelPosition.INSIDE ),
+        PiePoint(label = "May", yValue = Random.nextFloat() * 100, colour = Color.Cyan, labelPosition = PieChartLabelPosition.INSIDE ),
+        PiePoint(label = "Jun", yValue = Random.nextFloat() * 100, colour = Color.Magenta, labelPosition = PieChartLabelPosition.INSIDE )
+    )
+
+
 
     /**
      * Creat a min and max value for the y-axis so we have some buffer
@@ -106,6 +121,10 @@ fun SamplesCharts() {
             }
         }
 
+        EasyCard(title="Pie Chart with Custom Labels and Random Data") {
+            PieChart(modifier = Modifier.padding(12.dp),appSettings = settings, piePoints )
+        }
+
         EasyCard(title="Minimal Configuration with Random Data") {
             LineChartSampleMinimal(modifier = Modifier.padding(12.dp), appSettings = settings, points, minY = minY, maxY= maxY)
         }
@@ -125,7 +144,9 @@ fun SamplesCharts() {
         EasyCard(title="Mixed Series Bar Chart with Custom Labels and Random Data") {
             MixedChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings, points, timeSeries, minY = minYTimeSeries, maxY= maxYTimeSeries)
         }
+
     }
+
 }
 
 @Preview(showBackground = true)
