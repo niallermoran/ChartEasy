@@ -3,13 +3,10 @@ package com.niallermoran.charteasysampleapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -20,25 +17,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.niallermoran.charteasy.PieChartLabelPosition
-import com.niallermoran.charteasy.PiePoint
-import com.niallermoran.charteasysampleapp.charts.BarChartTimeSeries
+import com.niallermoran.charteasy.AxisConfig
+import com.niallermoran.charteasy.AxisType
+import com.niallermoran.charteasy.BottomAxisConfig
+import com.niallermoran.charteasy.Chart
+import com.niallermoran.charteasy.DataProvider
+import com.niallermoran.charteasy.MixedChart
+import com.niallermoran.charteasy.PieChart
+import com.niallermoran.charteasy.PieChartConfig
 import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
-import com.niallermoran.charteasysampleapp.charts.LineChartSampleFormatted
-import com.niallermoran.charteasysampleapp.charts.LineChartSampleMinimal
-import com.niallermoran.charteasysampleapp.charts.LineChartTimeSeries
-import com.niallermoran.charteasysampleapp.charts.MixedChartTimeSeries
-import com.niallermoran.charteasysampleapp.charts.PieChart
-import com.niallermoran.charteasysampleapp.charts.generateRandomIntegers
-import com.niallermoran.charteasysampleapp.charts.generateTimeSeries
 import com.niallermoran.charteasysampleapp.layouts.EasyCard
 import com.niallermoran.charteasysampleapp.model.AppSettings
-import kotlin.random.Random
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,33 +56,26 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SamplesCharts() {
 
-    val points = generateRandomIntegers()
-    val timeSeries = generateTimeSeries()
-    val piePoints = listOf<PiePoint>(
-        PiePoint(label = "Jan", yValue = Random.nextFloat() * 100, colour = Color.Red, labelPosition = PieChartLabelPosition.INSIDE ),
-        PiePoint(label = "Feb", yValue = Random.nextFloat() * 100, colour = Color.Blue, labelPosition = PieChartLabelPosition.INSIDE ),
-        PiePoint(label = "Mar", yValue = Random.nextFloat() * 100, colour = Color.Green, labelPosition = PieChartLabelPosition.INSIDE ),
-        PiePoint(label = "Apr", yValue = Random.nextFloat() * 100, colour = Color.Yellow, labelPosition = PieChartLabelPosition.INSIDE ),
-        PiePoint(label = "May", yValue = Random.nextFloat() * 100, colour = Color.Cyan, labelPosition = PieChartLabelPosition.INSIDE ),
-        PiePoint(label = "Jun", yValue = Random.nextFloat() * 100, colour = Color.Magenta, labelPosition = PieChartLabelPosition.INSIDE )
-    )
+    val data = DataProvider()
 
-
+    val points = data.points
+    val timeSeries = data.timeSeries
+    val piePoints = data.piePoints
 
     /**
-     * Creat a min and max value for the y-axis so we have some buffer
+     * Create a min and max value for the y-axis so we have some buffer
      */
     val minY = points.minOf { it.yValue } * 0.95f
     val maxY = points.maxOf { it.yValue } * 1.05f
 
     /**
-     * Creat a min and max value for the y-axis so we have some buffer
+     * Create a min and max value for the y-axis so we have some buffer
      */
     val minYTimeSeries = timeSeries.minOf { it.yValue } * 0.95f
     val maxYTimeSeries = timeSeries.maxOf { it.yValue } * 1.05f
 
-    var smoothLineCharts by rememberSaveable(){ mutableStateOf(true)}
-    var fillCharts by rememberSaveable(){ mutableStateOf(true)}
+    var smoothLineCharts by rememberSaveable{ mutableStateOf(true)}
+    var fillCharts by rememberSaveable{ mutableStateOf(true)}
 
     val settings = AppSettings(smoothLineCharts = smoothLineCharts, fillCharts = fillCharts)
 
@@ -101,7 +90,7 @@ fun SamplesCharts() {
 
         EasyCard(title="Options") {
 
-            Column() {
+            Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = smoothLineCharts,
@@ -121,29 +110,157 @@ fun SamplesCharts() {
             }
         }
 
-        EasyCard(title="Pie Chart with Custom Labels and Random Data") {
-            PieChart(modifier = Modifier.padding(12.dp), piePoints )
-        }
 
         EasyCard(title="Minimal Configuration with Random Data") {
-            LineChartSampleMinimal(modifier = Modifier.padding(12.dp), appSettings = settings, points = points)
+            Chart(
+                modifier = Modifier.padding(12.dp),
+                leftAxisConfig = AxisConfig(
+                    dataPoints = points,
+                    showFillColour = settings.fillCharts
+                )
+            )
         }
 
         EasyCard(title="Formatted with Random Data") {
-            LineChartSampleFormatted(modifier = Modifier.padding(12.dp), appSettings = settings, points, minY = minY, maxY= maxY)
+            Chart(
+                modifier = Modifier.padding(12.dp),
+                leftAxisConfig = AxisConfig(
+                    dataPoints = points,
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray,
+                    lineColor = Color.Blue,
+                    smoothLine = settings.smoothLineCharts,
+                    showFillColour = settings.fillCharts,
+                    fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
+                    minY = minY,
+                    maxY = maxY
+                ),
+                bottomAxisConfig = BottomAxisConfig(
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray,
+                )
+            )
         }
 
         EasyCard(title="Time Series with Custom Labels and Random Data") {
-            LineChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings, timeSeries, minY = minYTimeSeries, maxY= maxYTimeSeries)
+
+            /**
+             * Creates a chart with configuration.
+             * For the time series chart we are using a formatter to display the date in the format we want on the bottom axis
+             */
+            Chart(
+                modifier = Modifier.padding(12.dp), // use some padding so last x-axis label is not clipped
+                leftAxisConfig = AxisConfig(
+                    dataPoints = timeSeries,
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray,
+                    lineColor = Color.Blue,
+                    smoothLine = settings.smoothLineCharts,
+                    showFillColour = settings.fillCharts,
+                    fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
+                    minY = minYTimeSeries,
+                    maxY = maxYTimeSeries
+                ),
+                bottomAxisConfig = BottomAxisConfig(
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray
+                ),
+                formatBottomAxisLabel = { _, x, _ ->
+                    // x represents an epoch in milliseconds
+                    val date = Date(x.toLong())
+                    val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
+                    dateFormatter.format(date)
+                }
+            )
         }
 
         EasyCard(title="Time Series Bar Chart with Custom Labels and Random Data") {
-            BarChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings, points= timeSeries, minY = minYTimeSeries, maxY= maxYTimeSeries)
+            /**
+             * Creates a chart with minimum configuration.
+             * Labels will be created for every point and the chart defaults to a line chart
+             */
+            Chart(
+                modifier = Modifier.padding(end = 12.dp), // use some padding so last x-axis label is not clipped
+                leftAxisConfig = AxisConfig(
+                    dataPoints = points,
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray,
+                    lineColor = Color.Blue,
+                    smoothLine = settings.smoothLineCharts,
+                    showFillColour = settings.fillCharts,
+                    fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
+                    type = AxisType.Bar,
+                    minY = minY,
+                    maxY = maxY
+                ),
+                bottomAxisConfig = BottomAxisConfig(
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray
+                ),
+                formatBottomAxisLabel = { _, x, _ ->
+                    // x represents an epoch in milliseconds
+                    val date = Date(x.toLong())
+                    val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
+                    dateFormatter.format(date)
+                }
+            )
         }
 
         EasyCard(title="Mixed Series Bar Chart with Custom Labels and Random Data") {
-            MixedChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings, points = timeSeries, minY = minYTimeSeries, maxY= maxYTimeSeries)
+            /**
+             * Creates a chart with minimum configuration.
+             * Labels will be created for every point and the chart defaults to a line chart
+             */
+            MixedChart(
+                modifier = Modifier.padding(12.dp), // use some padding so last x-axis label is not clipped
+                leftAxisConfig = AxisConfig(
+                    dataPoints = points,
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray,
+                    lineColor = Color.Blue,
+                    smoothLine = settings.smoothLineCharts,
+                    showFillColour = settings.fillCharts,
+                    fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
+                    type = AxisType.Bar,
+                    minY = minY,
+                    maxY = maxY
+                ),
+                rightAxisConfig = AxisConfig(
+                    dataPoints = points,
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray,
+                    lineColor = Color.Blue,
+                    smoothLine = settings.smoothLineCharts,
+                    showFillColour = false,
+                    type = AxisType.Line,
+                    minY = minY,
+                    maxY = maxY
+                ),
+                bottomAxisConfig = BottomAxisConfig(
+                    tickColor = Color.Gray,
+                    axisColor = Color.Gray
+                ),
+                formatBottomAxisLabel = { _, x, _ ->
+                    // x represents an epoch in milliseconds
+                    val date = Date(x.toLong())
+                    val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
+                    dateFormatter.format(date)
+                }
+            )
         }
+
+        EasyCard(title="Pie Chart with Custom Labels and Random Data") {
+
+            PieChart(
+                modifier = Modifier.padding(12.dp),
+                config = PieChartConfig(
+                    dataPoints = piePoints,
+                    chartHeight = 300.dp,
+                    padding = PaddingValues(6.dp)
+                ),
+            )
+        }
+
 
     }
 

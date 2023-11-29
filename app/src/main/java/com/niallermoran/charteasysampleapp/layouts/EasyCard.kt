@@ -33,7 +33,7 @@ fun EasyCard(title:String = "Chart title", content: @Composable RowScope.() -> U
 
         Text(
             text = title, modifier = Modifier
-                .padding(2.dp)
+                .padding(12.dp)
                 .fillMaxWidth(), textAlign = TextAlign.Center
         )
 
