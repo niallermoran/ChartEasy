@@ -2,17 +2,12 @@ package com.niallermoran.charteasy
 
 import android.graphics.PointF
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -26,32 +21,69 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Hashtable
 
-
+/**
+ * The chart creates a cartesian co-ordinate chart with a bottom axis and a left axis.
+ * The chart will display a line or bar depending on the type property of leftAxisConfig.
+ */
 @Composable
-fun ChartEasy(
+fun Chart(
     modifier: Modifier = Modifier,
-    config: Config,
+    chartConfig: ChartConfig = ChartConfig(),
+    leftAxisConfig: AxisConfig,
+    bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
+    formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
+    formatLeftAxisLabel: ((Int, Float) -> String)? = null,
+    onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+) {
+    val config = Config(
+        chartConfig = chartConfig,
+        leftAxisConfig = leftAxisConfig,
+        bottomAxisConfig = bottomAxisConfig,
+        onPlotAreaTap = onPlotAreaTap
+    )
+
+    DrawLineBarChart(
+        config,
+        formatLeftAxisLabel,
+        null,
+        formatBottomAxisLabel,
+        modifier
+    )
+}
+
+/**
+ * The chart creates a cartesian co-ordinate chart with a bottom axis, a left axis and a right axis.
+ * The chart will display a line or bar depending on the type property of leftAxisConfig or rightAxisConfig.
+ */
+@Composable
+fun MixedChart(
+    modifier: Modifier = Modifier,
+    chartConfig: ChartConfig = ChartConfig(),
+    leftAxisConfig: AxisConfig,
+    rightAxisConfig: AxisConfig,
+    bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
     formatRightAxisLabel: ((Int, Float) -> String)? = null,
+    onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
 ) {
+    val config = Config(
+        chartConfig = chartConfig,
+        leftAxisConfig = leftAxisConfig,
+        bottomAxisConfig = bottomAxisConfig,
+        onPlotAreaTap = onPlotAreaTap,
+        rightAxisConfig = rightAxisConfig
+    )
 
-    if (config.pieChartConfig != null)
-        DrawPieChart(config = config, modifier = modifier)
-    else if (config.leftAxisConfig != null) {
-        DrawLineBarChart(
-            config,
-            formatLeftAxisLabel,
-            formatRightAxisLabel,
-            formatBottomAxisLabel,
-            modifier
-        )
-    } else {
-        throw Exception("The chart must have a leftAxisConfig or pieChartConfig defined as a minimum")
-    }
-
-
+    DrawLineBarChart(
+        config,
+        formatLeftAxisLabel,
+        formatRightAxisLabel,
+        formatBottomAxisLabel,
+        modifier
+    )
 }
+
 
 @Composable
 private fun DrawLineBarChart(
@@ -263,137 +295,6 @@ private fun DrawLineBarChart(
 
         }
     }
-}
-
-@Composable
-private fun DrawPieChart(config: Config, modifier: Modifier = Modifier) {
-
-    val density = LocalDensity.current
-    val textMeasurer = rememberTextMeasurer()
-
-    if (config.pieChartConfig != null) {
-
-        BoxWithConstraints(
-            modifier = modifier
-                .height(config.chartConfig.height)
-                .fillMaxWidth()
-                .padding(config.pieChartConfig.padding),
-            contentAlignment = Alignment.Center
-        ) {
-
-            val height = constraints.maxHeight
-            val width = constraints.maxWidth
-            val diameter = if (width < height) width.toFloat() else height.toFloat()
-            val radius = diameter / 2
-            val points = config.pieChartConfig.dataPoints.sortedBy { it.yValue }
-            val sumOfY = points.sumOf { it.yValue.toDouble() }.toFloat()
-
-            Canvas(modifier = Modifier
-                .align(Alignment.Center)
-                .shadow(12.dp, shape = CircleShape)
-                .size(with(density) { diameter.toDp() }, with(density) { diameter.toDp() })
-                //        .background(Color.Red)
-                .drawWithCache {
-                    onDrawBehind {
-
-                        drawArc(
-                            color = Color.Black,
-                            topLeft = Offset(x = 0f, y = 0f),
-                            startAngle = 0f,
-                            sweepAngle = 360f,
-                            useCenter = true,
-                        )
-
-                        var startAngle = 0f
-
-                        points.forEachIndexed { index, chartPoint ->
-
-                            // calculate the angle of sweep
-                            val sweepAngle = 360f * (chartPoint.yValue / sumOfY)
-
-                            // draw the arc
-                            drawArc(
-                                color = chartPoint.colour,
-                                alpha = chartPoint.alpha,
-                                topLeft = Offset(x = 0f, y = 0f),
-                                startAngle = startAngle,
-                                sweepAngle = sweepAngle,
-                                useCenter = true,
-                                size = Size(diameter, diameter)
-                            )
-
-                            // cut the arc in two with a line half radius long.
-                            // at the endpoint of this bisector drop to x and y axis to find deltas
-                            // to calculate the offset for the label
-                            // angleA is the angle between the bisector and the x axis
-                            val angleA = startAngle + (sweepAngle / 2)
-                            val angleB = 90 - angleA
-                            val labelXOffset =  radius + (radius * Math.sin(angleB.toDouble() * 0.0174533) / 2).toFloat()
-                            val labelYOffset = radius + (radius * Math.sin(angleA.toDouble() * 0.0174533) / 2).toFloat()
-
-
-                            val measure = textMeasurer.measure(
-                                chartPoint.label,
-                                chartPoint.labelStyle,
-                                TextOverflow.Visible,
-                                maxLines = 1
-                            )
-
-
-                            val labelXOffsetOutside = radius + ( (measure.size.width +radius) * Math.sin(angleB.toDouble() * 0.0174533) ).toFloat()
-                            val labelYOffsetOutside =  radius +((measure.size.height + radius) * Math.sin(angleA.toDouble() * 0.0174533) ).toFloat()
-
-                            val labelXOffsetEdge = radius + (radius * Math.sin(angleB.toDouble() * 0.0174533) ).toFloat()
-                            val labelYOffsetEdge =  radius +(radius * Math.sin(angleA.toDouble() * 0.0174533) ).toFloat()
-
-                            when (chartPoint.labelPosition) {
-
-                                PieChartLabelPosition.INSIDE -> {
-                                    // draw the label
-                                    drawText(
-                                        topLeft = Offset(
-                                            labelXOffset - (measure.size.width / 2),
-                                            labelYOffset - (measure.size.height / 2)
-                                        ),
-                                        textLayoutResult = measure
-                                    )
-                                }
-
-                                PieChartLabelPosition.OUTSIDE -> {
-                                    drawText(
-                                        topLeft = Offset(
-                                            labelXOffsetOutside - (measure.size.width / 2),
-                                            labelYOffsetOutside - (measure.size.height / 2)
-                                        ),
-                                        textLayoutResult = measure
-                                    )
-                                }
-
-                                PieChartLabelPosition.EDGE -> {
-                                    drawText(
-                                        topLeft = Offset(
-                                            labelXOffsetEdge - (measure.size.width / 2),
-                                            labelYOffsetEdge - (measure.size.height / 2)
-                                        ),
-                                        textLayoutResult = measure
-                                    )
-                                }
-
-                                PieChartLabelPosition.INVISIBLE -> {}
-                            }
-
-
-                            startAngle += sweepAngle
-
-                        }
-
-
-                    }
-                }) {
-            }
-        }
-    }
-
 }
 
 @Composable
@@ -754,10 +655,7 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
 
                         // get a list of graphic coordinates for the points
                         val linePoints = ArrayList<PointF>()
-                        for (i in 0 until points.size) {
-
-                            val point = points[i]
-
+                        for (point in points) {
                             // actual point add to path
                             val x = width * (point.xValue - xMin) / (xMax - xMin)
                             val y = height - (height * (point.yValue - yMin) / (yMax - yMin))
@@ -816,7 +714,7 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                         } else {
                             pathLine.moveTo(linePoints.first().x, linePoints.first().y)
 
-                            linePoints.forEachIndexed { index, pointF ->
+                            linePoints.forEach { pointF ->
                                 pathLine.lineTo(pointF.x, pointF.y)
                                 pathFill.lineTo(pointF.x, pointF.y)
                             }
@@ -894,19 +792,6 @@ data class BottomAxisConfig(
     val maxNumberOfLabelsToDisplay: Int? = null,
 
     val labelMaxLines: Int = 1,
-)
-
-data class PieChartConfig(
-
-    /**
-     * The data points used to plot a chart.
-     */
-    var dataPoints: List<PiePoint>,
-
-    /**
-     * The padding around the piechart. Use this to ensure your labels display as expected
-     */
-    var padding: PaddingValues = PaddingValues(12.dp),
 )
 
 
@@ -1015,24 +900,11 @@ data class ChartPoint(
     val key: String? = null,
 )
 
-data class PiePoint(
-    val label: String,
-    val yValue: Float,
-    val labelPosition: PieChartLabelPosition,
-    val colour: Color,
-    val labelStyle: TextStyle = TextStyle(
-        fontSize = 16.sp,
-        textAlign = TextAlign.Center,
-        background = Color.Transparent,
-    ),
-    val alpha:Float = 0.9f
-)
 
-data class Config(
+private data class Config(
     val chartConfig: ChartConfig = ChartConfig(),
     val leftAxisConfig: AxisConfig? = null,
     val rightAxisConfig: AxisConfig? = null,
-    val pieChartConfig: PieChartConfig? = null,
     val bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
     val onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
 )
@@ -1042,8 +914,4 @@ data class Config(
  */
 enum class AxisType {
     Line, Bar
-}
-
-enum class PieChartLabelPosition {
-    INSIDE, OUTSIDE, EDGE, INVISIBLE
 }

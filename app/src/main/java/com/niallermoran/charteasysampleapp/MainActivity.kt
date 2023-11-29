@@ -122,11 +122,11 @@ fun SamplesCharts() {
         }
 
         EasyCard(title="Pie Chart with Custom Labels and Random Data") {
-            PieChart(modifier = Modifier.padding(12.dp),appSettings = settings, piePoints )
+            PieChart(modifier = Modifier.padding(12.dp), piePoints )
         }
 
         EasyCard(title="Minimal Configuration with Random Data") {
-            LineChartSampleMinimal(modifier = Modifier.padding(12.dp), appSettings = settings, points, minY = minY, maxY= maxY)
+            LineChartSampleMinimal(modifier = Modifier.padding(12.dp), appSettings = settings, points = points)
         }
 
         EasyCard(title="Formatted with Random Data") {
@@ -138,11 +138,11 @@ fun SamplesCharts() {
         }
 
         EasyCard(title="Time Series Bar Chart with Custom Labels and Random Data") {
-            BarChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings, timeSeries, minY = minYTimeSeries, maxY= maxYTimeSeries)
+            BarChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings, points= timeSeries, minY = minYTimeSeries, maxY= maxYTimeSeries)
         }
 
         EasyCard(title="Mixed Series Bar Chart with Custom Labels and Random Data") {
-            MixedChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings, points, timeSeries, minY = minYTimeSeries, maxY= maxYTimeSeries)
+            MixedChartTimeSeries(modifier = Modifier.padding(12.dp),appSettings = settings, points = timeSeries, minY = minYTimeSeries, maxY= maxYTimeSeries)
         }
 
     }
