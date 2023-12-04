@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.niallermoran.charteasy.AxisConfig
@@ -189,14 +190,16 @@ fun SamplesCharts() {
                     display = showAxes,
                     displayLabels = showLabels,
                     displayTicks = showTicks,
-                    lineStrokeWidth = lineThickness.dp
+                    lineStrokeWidth = lineThickness.dp,
+                    labelStyle = TextStyle(color=Color.Red)
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    labelStyle = TextStyle(color = Color.Red)
                 )
             )
         }

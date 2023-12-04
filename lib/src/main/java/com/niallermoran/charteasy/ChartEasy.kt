@@ -425,7 +425,7 @@ private fun YAxisTicksAndLabels(
                             drawText(
                                 topLeft = topLeft,
                                 textLayoutResult = measure,
-                                color = config.tickColor
+                                color = config.labelStyle.color
                             )
                         }
                     }
@@ -547,7 +547,7 @@ private fun DrawBottomAxisTicksAndLabels(
                                         config.bottomAxisConfig.tickLength.toPx()
                                     ),
                                     textLayoutResult = measure,
-                                    color = config.bottomAxisConfig.tickColor
+                                    color = config.bottomAxisConfig.labelStyle.color
                                 )
                             }
                         }
