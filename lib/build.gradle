@@ -6,7 +6,7 @@ plugins {
 apply plugin: 'maven-publish'
 
 def getVersionName = { ->
-    return "0.21"
+    return "0.3"
 }
 
 def getArtifactId = { ->
@@ -40,12 +40,12 @@ publishing {
         /**
          * Use this when publishing for public use on jitpack
          */
-    //    maven { url "https://jitpack.io" }
+       maven { url "https://jitpack.io" }
 
         /**
          * Uncomment when publishing to GitHub
          */
-        maven {
+     /*   maven {
             name = "GitHubPackages"
 
             url = uri(getGitHubUrl())
@@ -53,7 +53,7 @@ publishing {
                 username = githubusername_publisher
                 password = githubtoken_publisher
             }
-        }
+        }*/
     }
 }
 
