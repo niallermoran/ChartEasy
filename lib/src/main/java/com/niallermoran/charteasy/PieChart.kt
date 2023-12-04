@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.sin
+import kotlin.random.Random
 
 @Composable
 fun PieChart(
@@ -97,12 +98,11 @@ private fun DrawPieChart(config: PieChartConfig, modifier: Modifier = Modifier) 
 
 
                         val measure = textMeasurer.measure(
-                            chartPoint.label,
-                            chartPoint.labelStyle,
-                            TextOverflow.Visible,
-                            maxLines = 1
+                            text = chartPoint.label,
+                            style = chartPoint.labelStyle,
+                            overflow = chartPoint.overflow,
+                            maxLines = chartPoint.maxLinesForLabel
                         )
-
 
                         val labelXOffsetOutside =
                             radius + ((measure.size.width + radius) * sin(angleB.toDouble() * 0.0174533)).toFloat()
@@ -188,14 +188,16 @@ enum class PieChartLabelPosition {
 
 
 data class PiePoint(
-    val label: String,
     val yValue: Float,
-    val labelPosition: PieChartLabelPosition,
-    val colour: Color,
+    val label: String = yValue.toString(),
+    val labelPosition: PieChartLabelPosition = PieChartLabelPosition.INSIDE,
+    val colour: Color =  Color ( red = Random.nextInt(256),  Random.nextInt(256), Random.nextInt(256), Random.nextInt(256) ),
     val labelStyle: TextStyle = TextStyle(
         fontSize = 16.sp,
         textAlign = TextAlign.Center,
         background = Color.Transparent,
     ),
+    val overflow: TextOverflow = TextOverflow.Visible,
+    val maxLinesForLabel: Int = 1,
     val alpha:Float = 0.9f
 )

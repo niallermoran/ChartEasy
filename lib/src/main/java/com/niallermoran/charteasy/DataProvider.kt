@@ -1,6 +1,9 @@
 package com.niallermoran.charteasy
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import java.util.Date
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -76,40 +79,47 @@ class DataProvider {
 
     private fun generatePiePoints() = listOf<PiePoint>(
         PiePoint(
-            label = "Jan",
+            label = "1 \n Jan",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Red,
-            labelPosition = PieChartLabelPosition.INSIDE
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
+            overflow = TextOverflow.Visible
         ),
         PiePoint(
-            label = "Feb",
+            label = "2 \n Feb",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Blue,
-            labelPosition = PieChartLabelPosition.INSIDE
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
         ),
         PiePoint(
-            label = "Mar",
+            label = "3 \n Mar",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Green,
-            labelPosition = PieChartLabelPosition.INSIDE
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
         ),
         PiePoint(
-            label = "Apr",
+            label = "4 \n Apr",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Yellow,
-            labelPosition = PieChartLabelPosition.INSIDE
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
         ),
         PiePoint(
-            label = "May",
+            label = "5 \n May",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Cyan,
-            labelPosition = PieChartLabelPosition.INSIDE
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
         ),
         PiePoint(
-            label = "Jun",
+            label = "6 \n Jun",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Magenta,
-            labelPosition = PieChartLabelPosition.INSIDE
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
         )
     )
 
