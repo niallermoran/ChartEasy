@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.sin
+import kotlin.random.Random
 
 @Composable
 fun PieChart(
@@ -187,10 +188,10 @@ enum class PieChartLabelPosition {
 
 
 data class PiePoint(
-    val label: String,
     val yValue: Float,
-    val labelPosition: PieChartLabelPosition,
-    val colour: Color,
+    val label: String = yValue.toString(),
+    val labelPosition: PieChartLabelPosition = PieChartLabelPosition.INSIDE,
+    val colour: Color =  Color ( red = Random.nextInt(256),  Random.nextInt(256), Random.nextInt(256), Random.nextInt(256) ),
     val labelStyle: TextStyle = TextStyle(
         fontSize = 16.sp,
         textAlign = TextAlign.Center,

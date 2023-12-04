@@ -81,7 +81,6 @@ class DataProvider {
         PiePoint(
             label = "1 \n Jan",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Red,
             labelPosition = PieChartLabelPosition.INSIDE,
             maxLinesForLabel = 2,
             labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
@@ -90,7 +89,6 @@ class DataProvider {
         PiePoint(
             label = "2 \n Feb",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Blue,
             labelPosition = PieChartLabelPosition.INSIDE,
             maxLinesForLabel = 2,
             labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
@@ -98,7 +96,6 @@ class DataProvider {
         PiePoint(
             label = "3 \n Mar",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Green,
             labelPosition = PieChartLabelPosition.INSIDE,
             maxLinesForLabel = 2,
             labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
@@ -106,7 +103,6 @@ class DataProvider {
         PiePoint(
             label = "4 \n Apr",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Yellow,
             labelPosition = PieChartLabelPosition.INSIDE,
             maxLinesForLabel = 2,
             labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
@@ -114,7 +110,6 @@ class DataProvider {
         PiePoint(
             label = "5 \n May",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Cyan,
             labelPosition = PieChartLabelPosition.INSIDE,
             maxLinesForLabel = 2,
             labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
@@ -122,7 +117,6 @@ class DataProvider {
         PiePoint(
             label = "6 \n Jun",
             yValue = Random.nextFloat() * 100,
-            colour = Color.Magenta,
             labelPosition = PieChartLabelPosition.INSIDE,
             maxLinesForLabel = 2,
             labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
