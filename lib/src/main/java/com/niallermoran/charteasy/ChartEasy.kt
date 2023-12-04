@@ -636,7 +636,7 @@ private fun DrawBarChart(config: Config) {
                                         drawPath(
                                             path = path,
                                             color = config.leftAxisConfig.lineColor,
-                                            style = Stroke(width = config.leftAxisConfig.axisStrokeWidth.value)
+                                            style = Stroke(width = config.leftAxisConfig.lineStrokeWidth.value)
                                         )
 
                                         if (config.leftAxisConfig.showFillColour) {
@@ -781,13 +781,13 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                             drawPath(
                                 path = pathLine,
                                 color = config.lineColor,
-                                style = Stroke(width = config.axisStrokeWidth.value)
+                                style = Stroke(width = config.lineStrokeWidth.value)
                             )
 
                             drawPath(
                                 path = pathSpline,
                                 color = config.lineColor,
-                                style = Stroke(width = config.axisStrokeWidth.value)
+                                style = Stroke(width = config.lineStrokeWidth.value)
                             )
 
                             if (config.showFillColour) {
@@ -915,6 +915,7 @@ data class AxisConfig(
     val axisColor: Color = Color.Black,
     val axisStrokeWidth: Dp = 2.dp,
     val tickStrokeWidth: Dp = 2.dp,
+    val lineStrokeWidth: Dp = 8.dp,
 
 
     /**

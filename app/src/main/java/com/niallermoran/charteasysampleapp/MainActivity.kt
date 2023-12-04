@@ -8,10 +8,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -83,6 +85,7 @@ fun SamplesCharts() {
     var showAxes by rememberSaveable { mutableStateOf(true) }
     var showTicks by rememberSaveable { mutableStateOf(true) }
     var showLabels by rememberSaveable { mutableStateOf(true) }
+    var lineThickness by rememberSaveable { mutableFloatStateOf(4f) }
 
     val settings = AppSettings(smoothLineCharts = smoothLineCharts, fillCharts = fillCharts)
 
@@ -138,11 +141,20 @@ fun SamplesCharts() {
                         })
                     Text(text = "Show Axes", modifier = Modifier.weight(1f))
                 }
+                Column(horizontalAlignment = Alignment.Start) {
+                    Text(text = "Line Thickness")
+                    Slider(value = lineThickness,
+                        valueRange = 2f..24f,
+                        onValueChange = {
+                            lineThickness = it
+                    })
+                }
             }
         }
 
-
         EasyCard(title = "Minimal Configuration with Random Data") {
+
+
             Chart(
                 modifier = Modifier.padding(12.dp),
                 leftAxisConfig = AxisConfig(
@@ -150,7 +162,8 @@ fun SamplesCharts() {
                     showFillColour = settings.fillCharts,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    lineStrokeWidth = lineThickness.dp
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     display = showAxes,
@@ -175,7 +188,8 @@ fun SamplesCharts() {
                     maxY = maxY,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    lineStrokeWidth = lineThickness.dp
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -207,7 +221,8 @@ fun SamplesCharts() {
                     maxY = maxYTimeSeries1,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    lineStrokeWidth = lineThickness.dp
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -245,7 +260,8 @@ fun SamplesCharts() {
                     maxY = maxYTimeSeries1,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    lineStrokeWidth = lineThickness.dp
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -283,7 +299,8 @@ fun SamplesCharts() {
                     maxY = maxYTimeSeries1,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    lineStrokeWidth = lineThickness.dp
                 ),
                 rightAxisConfig = AxisConfig(
                     dataPoints = timeSeries2,
@@ -297,7 +314,8 @@ fun SamplesCharts() {
                     maxY = maxYTimeSeries2,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    lineStrokeWidth = lineThickness.dp
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
