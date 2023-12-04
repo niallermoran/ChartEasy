@@ -59,8 +59,9 @@ fun SamplesCharts() {
     val data = DataProvider()
 
     val points = data.points
-    val timeSeries = data.timeSeries
     val piePoints = data.piePoints
+    val timeSeries1 = data.timeSeries
+    val timeSeries2 = data.timeSeries
 
     /**
      * Create a min and max value for the y-axis so we have some buffer
@@ -71,11 +72,17 @@ fun SamplesCharts() {
     /**
      * Create a min and max value for the y-axis so we have some buffer
      */
-    val minYTimeSeries = timeSeries.minOf { it.yValue } * 0.95f
-    val maxYTimeSeries = timeSeries.maxOf { it.yValue } * 1.05f
+    val minYTimeSeries1 = timeSeries1.minOf { it.yValue } * 0.95f
+    val maxYTimeSeries1 = timeSeries1.maxOf { it.yValue } * 1.05f
+    val minYTimeSeries2 = timeSeries2.minOf { it.yValue } * 0.95f
+    val maxYTimeSeries2 = timeSeries2.maxOf { it.yValue } * 1.05f
 
-    var smoothLineCharts by rememberSaveable{ mutableStateOf(true)}
-    var fillCharts by rememberSaveable{ mutableStateOf(true)}
+    var smoothLineCharts by rememberSaveable { mutableStateOf(true) }
+    var fillCharts by rememberSaveable { mutableStateOf(true) }
+
+    var showAxes by rememberSaveable { mutableStateOf(true) }
+    var showTicks by rememberSaveable { mutableStateOf(true) }
+    var showLabels by rememberSaveable { mutableStateOf(true) }
 
     val settings = AppSettings(smoothLineCharts = smoothLineCharts, fillCharts = fillCharts)
 
@@ -88,7 +95,7 @@ fun SamplesCharts() {
     )
     {
 
-        EasyCard(title="Options") {
+        EasyCard(title = "Options") {
 
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -107,21 +114,53 @@ fun SamplesCharts() {
                         })
                     Text(text = "Show Fills", modifier = Modifier.weight(1f))
                 }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = showLabels,
+                        onCheckedChange = {
+                            showLabels = it
+                        })
+                    Text(text = "Show Labels", modifier = Modifier.weight(1f))
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = showTicks,
+                        onCheckedChange = {
+                            showTicks = it
+                        })
+                    Text(text = "Show Tick", modifier = Modifier.weight(1f))
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = showAxes,
+                        onCheckedChange = {
+                            showAxes = it
+                        })
+                    Text(text = "Show Axes", modifier = Modifier.weight(1f))
+                }
             }
         }
 
 
-        EasyCard(title="Minimal Configuration with Random Data") {
+        EasyCard(title = "Minimal Configuration with Random Data") {
             Chart(
                 modifier = Modifier.padding(12.dp),
                 leftAxisConfig = AxisConfig(
                     dataPoints = points,
-                    showFillColour = settings.fillCharts
+                    showFillColour = settings.fillCharts,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
+                ),
+                bottomAxisConfig = BottomAxisConfig(
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 )
             )
         }
 
-        EasyCard(title="Formatted with Random Data") {
+        EasyCard(title = "Formatted with Random Data") {
             Chart(
                 modifier = Modifier.padding(12.dp),
                 leftAxisConfig = AxisConfig(
@@ -133,16 +172,22 @@ fun SamplesCharts() {
                     showFillColour = settings.fillCharts,
                     fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
                     minY = minY,
-                    maxY = maxY
+                    maxY = maxY,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 )
             )
         }
 
-        EasyCard(title="Time Series with Custom Labels and Random Data") {
+        EasyCard(title = "Time Series with Custom Labels and Random Data") {
 
             /**
              * Creates a chart with configuration.
@@ -151,19 +196,25 @@ fun SamplesCharts() {
             Chart(
                 modifier = Modifier.padding(12.dp), // use some padding so last x-axis label is not clipped
                 leftAxisConfig = AxisConfig(
-                    dataPoints = timeSeries,
+                    dataPoints = timeSeries1,
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
                     lineColor = Color.Blue,
                     smoothLine = settings.smoothLineCharts,
                     showFillColour = settings.fillCharts,
                     fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
-                    minY = minYTimeSeries,
-                    maxY = maxYTimeSeries
+                    minY = minYTimeSeries1,
+                    maxY = maxYTimeSeries1,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
-                    axisColor = Color.Gray
+                    axisColor = Color.Gray,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 ),
                 formatBottomAxisLabel = { _, x, _ ->
                     // x represents an epoch in milliseconds
@@ -174,15 +225,15 @@ fun SamplesCharts() {
             )
         }
 
-        EasyCard(title="Time Series Bar Chart with Custom Labels and Random Data") {
+        EasyCard(title = "Time Series Bar Chart with Custom Labels and Random Data") {
             /**
              * Creates a chart with minimum configuration.
              * Labels will be created for every point and the chart defaults to a line chart
              */
             Chart(
-                modifier = Modifier.padding(end = 12.dp), // use some padding so last x-axis label is not clipped
+                modifier = Modifier.padding(12.dp), // use some padding so last x-axis label is not clipped
                 leftAxisConfig = AxisConfig(
-                    dataPoints = points,
+                    dataPoints = timeSeries1,
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
                     lineColor = Color.Blue,
@@ -190,12 +241,18 @@ fun SamplesCharts() {
                     showFillColour = settings.fillCharts,
                     fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
                     type = AxisType.Bar,
-                    minY = minY,
-                    maxY = maxY
+                    minY = minYTimeSeries1,
+                    maxY = maxYTimeSeries1,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
-                    axisColor = Color.Gray
+                    axisColor = Color.Gray,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 ),
                 formatBottomAxisLabel = { _, x, _ ->
                     // x represents an epoch in milliseconds
@@ -206,7 +263,7 @@ fun SamplesCharts() {
             )
         }
 
-        EasyCard(title="Mixed Series Bar Chart with Custom Labels and Random Data") {
+        EasyCard(title = "Mixed Series Bar Chart with Custom Labels and Random Data") {
             /**
              * Creates a chart with minimum configuration.
              * Labels will be created for every point and the chart defaults to a line chart
@@ -214,7 +271,7 @@ fun SamplesCharts() {
             MixedChart(
                 modifier = Modifier.padding(12.dp), // use some padding so last x-axis label is not clipped
                 leftAxisConfig = AxisConfig(
-                    dataPoints = points,
+                    dataPoints = timeSeries1,
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
                     lineColor = Color.Blue,
@@ -222,23 +279,32 @@ fun SamplesCharts() {
                     showFillColour = settings.fillCharts,
                     fillBrush = Brush.verticalGradient(listOf(Color.Cyan, Color.Blue)),
                     type = AxisType.Bar,
-                    minY = minY,
-                    maxY = maxY
+                    minY = minYTimeSeries1,
+                    maxY = maxYTimeSeries1,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 ),
                 rightAxisConfig = AxisConfig(
-                    dataPoints = points,
+                    dataPoints = timeSeries2,
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
                     lineColor = Color.Blue,
                     smoothLine = settings.smoothLineCharts,
                     showFillColour = false,
                     type = AxisType.Line,
-                    minY = minY,
-                    maxY = maxY
+                    minY = minYTimeSeries2,
+                    maxY = maxYTimeSeries2,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
-                    axisColor = Color.Gray
+                    axisColor = Color.Gray,
+                    display = showAxes,
+                    displayLabels = showLabels,
+                    displayTicks = showTicks
                 ),
                 formatBottomAxisLabel = { _, x, _ ->
                     // x represents an epoch in milliseconds
@@ -249,7 +315,7 @@ fun SamplesCharts() {
             )
         }
 
-        EasyCard(title="Pie Chart with Custom Labels and Random Data") {
+        EasyCard(title = "Pie Chart with Custom Labels and Random Data") {
 
             PieChart(
                 modifier = Modifier.padding(12.dp),
