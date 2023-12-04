@@ -97,12 +97,11 @@ private fun DrawPieChart(config: PieChartConfig, modifier: Modifier = Modifier) 
 
 
                         val measure = textMeasurer.measure(
-                            chartPoint.label,
-                            chartPoint.labelStyle,
-                            TextOverflow.Visible,
-                            maxLines = 1
+                            text = chartPoint.label,
+                            style = chartPoint.labelStyle,
+                            overflow = chartPoint.overflow,
+                            maxLines = chartPoint.maxLinesForLabel
                         )
-
 
                         val labelXOffsetOutside =
                             radius + ((measure.size.width + radius) * sin(angleB.toDouble() * 0.0174533)).toFloat()
@@ -197,5 +196,7 @@ data class PiePoint(
         textAlign = TextAlign.Center,
         background = Color.Transparent,
     ),
+    val overflow: TextOverflow = TextOverflow.Visible,
+    val maxLinesForLabel: Int = 1,
     val alpha:Float = 0.9f
 )
