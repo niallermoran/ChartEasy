@@ -22,8 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.niallermoran.charteasy.AxisConfig
 import com.niallermoran.charteasy.AxisType
 import com.niallermoran.charteasy.BottomAxisConfig
@@ -88,6 +90,8 @@ fun SamplesCharts() {
     var showLabels by rememberSaveable { mutableStateOf(true) }
     var lineThickness by rememberSaveable { mutableFloatStateOf(4f) }
 
+    var displayText by rememberSaveable { mutableStateOf("tap something to see text") }
+
     val settings = AppSettings(smoothLineCharts = smoothLineCharts, fillCharts = fillCharts)
 
     Column(
@@ -99,7 +103,7 @@ fun SamplesCharts() {
     )
     {
 
-        EasyCard(title = "Options") {
+        EasyCard(title = "Options", onCardTap = {displayText = "options card tapped"}) {
 
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -148,12 +152,17 @@ fun SamplesCharts() {
                         valueRange = 2f..24f,
                         onValueChange = {
                             lineThickness = it
-                    })
+                        })
                 }
+
+                Column(horizontalAlignment = Alignment.Start) {
+                    Text(text = displayText)
+                }
+
             }
         }
 
-        EasyCard(title = "Minimal Configuration with Random Data") {
+        EasyCard(title = "Minimal Configuration with Random Data", onCardTap = {displayText = "minimal card tapped"}) {
 
 
             Chart(
@@ -170,7 +179,11 @@ fun SamplesCharts() {
                     display = showAxes,
                     displayLabels = showLabels,
                     displayTicks = showTicks
-                )
+                ),
+              /* onPlotAreaTap = {
+
+                    displayText = "minimal chart tapped"
+                }*/
             )
         }
 
@@ -191,7 +204,7 @@ fun SamplesCharts() {
                     displayLabels = showLabels,
                     displayTicks = showTicks,
                     lineStrokeWidth = lineThickness.dp,
-                    labelStyle = TextStyle(color=Color.Red)
+                    labelStyle = TextStyle(color = Color.Red)
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -325,7 +338,10 @@ fun SamplesCharts() {
                     axisColor = Color.Gray,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    labelStyle = TextStyle(fontSize = 10.sp),
+                    labelMaxLines = 2,
+                    labelOverflow = TextOverflow.Visible,
                 ),
                 formatBottomAxisLabel = { _, x, _ ->
                     // x represents an epoch in milliseconds

@@ -2,10 +2,13 @@ package com.niallermoran.charteasy
 
 import android.graphics.PointF
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.CacheDrawScope
+import androidx.compose.ui.draw.DrawResult
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
@@ -294,7 +297,7 @@ private fun DrawLineBarChart(
                     ) {
                         val height = constraints.maxHeight
 
-                        if( config.rightAxisConfig.display) {
+                        if (config.rightAxisConfig.display) {
                             // draw axis line
                             Canvas(modifier = Modifier
                                 .fillMaxSize()
@@ -412,7 +415,7 @@ private fun YAxisTicksAndLabels(
                             )
                         }
 
-                        if( config.displayTicks) {
+                        if (config.displayTicks) {
                             drawLine(
                                 color = config.tickColor,
                                 start = start,
@@ -421,7 +424,7 @@ private fun YAxisTicksAndLabels(
                             )
                         }
 
-                        if( config.displayLabels) {
+                        if (config.displayLabels) {
                             drawText(
                                 topLeft = topLeft,
                                 textLayoutResult = measure,
@@ -528,7 +531,7 @@ private fun DrawBottomAxisTicksAndLabels(
                                 maxLines = config.bottomAxisConfig.labelMaxLines
                             )
 
-                            if( config.bottomAxisConfig.displayTicks) {
+                            if (config.bottomAxisConfig.displayTicks) {
                                 drawLine(
                                     color = config.bottomAxisConfig.tickColor,
                                     start = Offset(x, 0f),
@@ -540,7 +543,7 @@ private fun DrawBottomAxisTicksAndLabels(
                                 )
                             }
 
-                            if( config.bottomAxisConfig.displayLabels) {
+                            if (config.bottomAxisConfig.displayLabels) {
                                 drawText(
                                     topLeft = Offset(
                                         x - (measure.size.width / 2),
@@ -616,20 +619,23 @@ private fun DrawBarChart(config: Config) {
                         path.lineTo(barWidth, y)
                         path.lineTo(barWidth, height)
 
+                        val modifier = Modifier
+                        if (config.onPlotAreaTap != null) {
+                            modifier.pointerInput(key1 = Unit) {
+                                detectTapGestures(
+                                    onTap = {
+                                        val lambda = config.onPlotAreaTap
+                                        lambda(chartPoint)
+                                    }
+                                )
+                            }
+                        }
+
                         // create a canvas to draw the bar
                         Canvas(
-                            modifier = Modifier
+                            modifier = modifier
                                 .width(barWidthDP)
                                 .fillMaxHeight()
-                                .pointerInput(key1 = Unit) {
-                                    detectTapGestures(
-                                        onTap = {
-                                            val lambda = config.onPlotAreaTap
-                                            if (lambda != null)
-                                                lambda(chartPoint)
-                                        }
-                                    )
-                                }
                                 .drawWithCache {
 
                                     onDrawBehind {
@@ -666,7 +672,7 @@ private fun DrawBarChart(config: Config) {
 }
 
 @Composable
-private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Unit)?) {
+private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Unit)? = null) {
 
     val pointsSortedByX = config.dataPoints.sortedBy { it.xValue }
 
@@ -683,144 +689,163 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
             val height = constraints.maxHeight.toFloat()
             val width = constraints.maxWidth.toFloat()
 
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(key1 = Unit) {
-                        detectTapGestures(
-                            onTap = {
-                                if (onPlotAreaTap != null) {
-
-                                    //TODO
-                                    /*      val x = it.x
-                                          var pointIndex = Math.round(points.size * (x / width)) - 1
-                                          if( pointIndex < 0) pointIndex = 1
-                                          if( pointIndex > points.size -1) pointIndex = points.size -1
-                                              val point = points[pointIndex]
-                                              val lambda = onPlotAreaTap
-                                                  lambda(point)*/
+            if (onPlotAreaTap != null) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawWithCache {
+                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config)
+                        }
+                        .pointerInput(key1 = Unit) {
+                            detectTapGestures(
+                                onTap = {
+                                    val x = it.x
+                                    var pointIndex = Math.round(points.size * (x / width)) - 1
+                                    if (pointIndex < 0) pointIndex = 1
+                                    if (pointIndex > points.size - 1) pointIndex = points.size - 1
+                                    val point = points[pointIndex]
+                                    val lambda = onPlotAreaTap
+                                    lambda(point)
                                 }
-                            }
-                        )
-                    }
-                    .drawWithCache {
-
-                        // get a list of graphic coordinates for the points
-                        val linePoints = ArrayList<PointF>()
-                        for (point in points) {
-                            // actual point add to path
-                            val x = width * (point.xValue - xMin) / (xMax - xMin)
-                            val y =
-                                height - (height * (point.yValue - yMin) / (yMax - yMin))
-                            linePoints.add(PointF(x, y))
-                        }
-
-                        // get a list of control points for Bezier curve
-                        val splinePoints1 = ArrayList<PointF>()
-                        val splinePoints2 = ArrayList<PointF>()
-                        // splinePoints1.add(PointF(linePoints[0].x, linePoints[0].y))
-                        for (i in 1 until points.size) {
-                            splinePoints1.add(
-                                PointF(
-                                    (linePoints[i].x + linePoints[i - 1].x) / 2,
-                                    linePoints[i - 1].y
-                                )
-                            )
-                            splinePoints2.add(
-                                PointF(
-                                    (linePoints[i].x + linePoints[i - 1].x) / 2,
-                                    linePoints[i].y
-                                )
                             )
                         }
+                ) {
 
-                        // path for shape fill
-                        val pathFill = Path()
-                        pathFill.moveTo(0f, height)
-
-                        // path for line
-                        val pathLine = Path()
-
-                        // path for spline
-                        val pathSpline = Path()
-
-                        // draw line and fill
-                        if (config.smoothLine) {
-                            pathFill.lineTo(linePoints.first().x, linePoints.first().y)
-                            pathSpline.moveTo(linePoints.first().x, linePoints.first().y)
-
-                            for (i in 1 until linePoints.size) {
-                                pathSpline.cubicTo(
-                                    splinePoints1[i - 1].x, splinePoints1[i - 1].y,
-                                    splinePoints2[i - 1].x, splinePoints2[i - 1].y,
-                                    linePoints[i].x, linePoints[i].y
-                                )
-
-                                pathFill.cubicTo(
-                                    splinePoints1[i - 1].x, splinePoints1[i - 1].y,
-                                    splinePoints2[i - 1].x, splinePoints2[i - 1].y,
-                                    linePoints[i].x, linePoints[i].y
-                                )
-                            }
-
-                            pathFill.lineTo(width, height)
-                        } else {
-                            pathLine.moveTo(linePoints.first().x, linePoints.first().y)
-
-                            linePoints.forEach { pointF ->
-                                pathLine.lineTo(pointF.x, pointF.y)
-                                pathFill.lineTo(pointF.x, pointF.y)
-                            }
-
-                            pathFill.lineTo(width, height)
+                }
+            } else {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawWithCache {
+                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config)
                         }
+                ) {
 
-
-                        onDrawBehind {
-
-                            drawPath(
-                                path = pathLine,
-                                color = config.lineColor,
-                                style = Stroke(width = config.lineStrokeWidth.value)
-                            )
-
-                            drawPath(
-                                path = pathSpline,
-                                color = config.lineColor,
-                                style = Stroke(width = config.lineStrokeWidth.value)
-                            )
-
-                            if (config.showFillColour) {
-                                drawPath(
-                                    path = pathFill,
-                                    brush = config.fillBrush,
-                                    style = Fill,
-                                    alpha = 0.3f,
-                                )
-                            }
-
-                            if (config.showCircles) {
-                                for (i in 1..points.size) {
-                                    val point = points[i - 1]
-                                    val x = width * (point.xValue - xMin) / (xMax - xMin)
-                                    val y =
-                                        height - (height * (point.yValue - yMin) / (yMax - yMin))
-
-                                    drawCircle(
-                                        color = config.circleColor,
-                                        center = Offset(x, y),
-                                        radius = config.circleRadius.value,
-
-                                        )
-                                }
-                            }
-
-                        }
-                    }
-            ) {
-
+                }
             }
         }
+    }
+}
+
+private fun CacheDrawScope.drawSpline(
+    points: List<ChartPoint>,
+    width: Float,
+    xMin: Float,
+    xMax: Float,
+    height: Float,
+    yMin: Float,
+    yMax: Float,
+    config: AxisConfig
+): DrawResult {
+    val linePoints = ArrayList<PointF>()
+    for (point in points) {
+        // actual point add to path
+        val x = width * (point.xValue - xMin) / (xMax - xMin)
+        val y =
+            height - (height * (point.yValue - yMin) / (yMax - yMin))
+        linePoints.add(PointF(x, y))
+    }
+
+    // get a list of control points for Bezier curve
+    val splinePoints1 = ArrayList<PointF>()
+    val splinePoints2 = ArrayList<PointF>()
+    // splinePoints1.add(PointF(linePoints[0].x, linePoints[0].y))
+    for (i in 1 until points.size) {
+        splinePoints1.add(
+            PointF(
+                (linePoints[i].x + linePoints[i - 1].x) / 2,
+                linePoints[i - 1].y
+            )
+        )
+        splinePoints2.add(
+            PointF(
+                (linePoints[i].x + linePoints[i - 1].x) / 2,
+                linePoints[i].y
+            )
+        )
+    }
+
+    // path for shape fill
+    val pathFill = Path()
+    pathFill.moveTo(0f, height)
+
+    // path for line
+    val pathLine = Path()
+
+    // path for spline
+    val pathSpline = Path()
+
+    // draw line and fill
+    if (config.smoothLine) {
+        pathFill.lineTo(linePoints.first().x, linePoints.first().y)
+        pathSpline.moveTo(linePoints.first().x, linePoints.first().y)
+
+        for (i in 1 until linePoints.size) {
+            pathSpline.cubicTo(
+                splinePoints1[i - 1].x, splinePoints1[i - 1].y,
+                splinePoints2[i - 1].x, splinePoints2[i - 1].y,
+                linePoints[i].x, linePoints[i].y
+            )
+
+            pathFill.cubicTo(
+                splinePoints1[i - 1].x, splinePoints1[i - 1].y,
+                splinePoints2[i - 1].x, splinePoints2[i - 1].y,
+                linePoints[i].x, linePoints[i].y
+            )
+        }
+
+        pathFill.lineTo(width, height)
+    } else {
+        pathLine.moveTo(linePoints.first().x, linePoints.first().y)
+
+        linePoints.forEach { pointF ->
+            pathLine.lineTo(pointF.x, pointF.y)
+            pathFill.lineTo(pointF.x, pointF.y)
+        }
+
+        pathFill.lineTo(width, height)
+    }
+
+
+    return onDrawBehind {
+
+        drawPath(
+            path = pathLine,
+            color = config.lineColor,
+            style = Stroke(width = config.lineStrokeWidth.value)
+        )
+
+        drawPath(
+            path = pathSpline,
+            color = config.lineColor,
+            style = Stroke(width = config.lineStrokeWidth.value)
+        )
+
+        if (config.showFillColour) {
+            drawPath(
+                path = pathFill,
+                brush = config.fillBrush,
+                style = Fill,
+                alpha = 0.3f,
+            )
+        }
+
+        if (config.showCircles) {
+            for (i in 1..points.size) {
+                val point = points[i - 1]
+                val x = width * (point.xValue - xMin) / (xMax - xMin)
+                val y =
+                    height - (height * (point.yValue - yMin) / (yMax - yMin))
+
+                drawCircle(
+                    color = config.circleColor,
+                    center = Offset(x, y),
+                    radius = config.circleRadius.value,
+
+                    )
+            }
+        }
+
     }
 }
 

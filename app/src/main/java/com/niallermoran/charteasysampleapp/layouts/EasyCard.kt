@@ -1,6 +1,7 @@
 package com.niallermoran.charteasysampleapp.layouts
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -15,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -22,10 +24,18 @@ import androidx.compose.ui.unit.dp
  * An elevated card to use for displaying sample charts
  */
 @Composable
-fun EasyCard(title:String = "Chart title", content: @Composable RowScope.() -> Unit) {
+fun EasyCard(
+    title: String = "Chart title", onCardTap: (() -> Unit)? = null,
+    content: @Composable RowScope.() -> Unit
+) {
 
     ElevatedCard(
-        modifier = Modifier.padding(6.dp),
+        modifier = Modifier
+            .padding(6.dp)
+            .clickable(onClick = {
+                if (onCardTap != null)
+                    onCardTap()
+            }),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
         )
