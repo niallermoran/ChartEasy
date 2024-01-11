@@ -3,6 +3,7 @@ package com.niallermoran.charteasy
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,116 +49,128 @@ private fun DrawPieChart(config: PieChartConfig, modifier: Modifier = Modifier) 
         val width = constraints.maxWidth
         val diameter = if (width < height) width.toFloat() else height.toFloat()
         val radius = diameter / 2
-        val points = config.dataPoints.sortedBy { it.yValue }
+        val points = config.dataPoints.sortedBy { it.yValue }.filter { it.yValue > 0 }
         val sumOfY = points.sumOf { it.yValue.toDouble() }.toFloat()
 
-        Canvas(modifier = Modifier
-            .align(Alignment.Center)
-            .shadow(12.dp, shape = CircleShape)
-            .size(with(density) { diameter.toDp() }, with(density) { diameter.toDp() })
-            //        .background(Color.Red)
-            .drawWithCache {
-                onDrawBehind {
+        if( sumOfY == 0.0f)
+        {
+            Box(modifier = Modifier
+                .align(Alignment.Center)
+                .fillMaxSize()
+                ) {
+                Text("No Data", modifier = Modifier.align(Alignment.Center))
+            }
+        }
+        else {
 
-                    drawArc(
-                        color = Color.Black,
-                        topLeft = Offset(x = 0f, y = 0f),
-                        startAngle = 0f,
-                        sweepAngle = 360f,
-                        useCenter = true,
-                    )
+            Canvas(modifier = Modifier
+                .align(Alignment.Center)
+                .shadow(12.dp, shape = CircleShape)
+                .size(with(density) { diameter.toDp() }, with(density) { diameter.toDp() })
+                //        .background(Color.Red)
+                .drawWithCache {
+                    onDrawBehind {
 
-                    var startAngle = 0f
-
-                    points.forEachIndexed { _, chartPoint ->
-
-                        // calculate the angle of sweep
-                        val sweepAngle = 360f * (chartPoint.yValue / sumOfY)
-
-                        // draw the arc
                         drawArc(
-                            color = chartPoint.colour,
-                            alpha = chartPoint.alpha,
+                            color = Color.Black,
                             topLeft = Offset(x = 0f, y = 0f),
-                            startAngle = startAngle,
-                            sweepAngle = sweepAngle,
+                            startAngle = 0f,
+                            sweepAngle = 360f,
                             useCenter = true,
-                            size = Size(diameter, diameter)
                         )
 
-                        // cut the arc in two with a line half radius long.
-                        // at the endpoint of this bisector drop to x and y axis to find deltas
-                        // to calculate the offset for the label
-                        // angleA is the angle between the bisector and the x axis
-                        val angleA = startAngle + (sweepAngle / 2)
-                        val angleB = 90 - angleA
-                        val labelXOffset =
-                            radius + (radius * sin(angleB.toDouble() * 0.0174533) / 2).toFloat()
-                        val labelYOffset =
-                            radius + (radius * sin(angleA.toDouble() * 0.0174533) / 2).toFloat()
+                        var startAngle = 0f
+
+                        points.forEachIndexed { _, chartPoint ->
+
+                            // calculate the angle of sweep
+                            val sweepAngle = 360f * (chartPoint.yValue / sumOfY)
+
+                            // draw the arc
+                            drawArc(
+                                color = chartPoint.colour,
+                                alpha = chartPoint.alpha,
+                                topLeft = Offset(x = 0f, y = 0f),
+                                startAngle = startAngle,
+                                sweepAngle = sweepAngle,
+                                useCenter = true,
+                                size = Size(diameter, diameter)
+                            )
+
+                            // cut the arc in two with a line half radius long.
+                            // at the endpoint of this bisector drop to x and y axis to find deltas
+                            // to calculate the offset for the label
+                            // angleA is the angle between the bisector and the x axis
+                            val angleA = startAngle + (sweepAngle / 2)
+                            val angleB = 90 - angleA
+                            val labelXOffset =
+                                radius + (radius * sin(angleB.toDouble() * 0.0174533) / 2).toFloat()
+                            val labelYOffset =
+                                radius + (radius * sin(angleA.toDouble() * 0.0174533) / 2).toFloat()
 
 
-                        val measure = textMeasurer.measure(
-                            text = chartPoint.label,
-                            style = chartPoint.labelStyle,
-                            overflow = chartPoint.overflow,
-                            maxLines = chartPoint.maxLinesForLabel
-                        )
+                            val measure = textMeasurer.measure(
+                                text = chartPoint.label,
+                                style = chartPoint.labelStyle,
+                                overflow = chartPoint.overflow,
+                                maxLines = chartPoint.maxLinesForLabel
+                            )
 
-                        val labelXOffsetOutside =
-                            radius + ((measure.size.width + radius) * sin(angleB.toDouble() * 0.0174533)).toFloat()
-                        val labelYOffsetOutside =
-                            radius + ((measure.size.height + radius) * sin(angleA.toDouble() * 0.0174533)).toFloat()
+                            val labelXOffsetOutside =
+                                radius + ((measure.size.width + radius) * sin(angleB.toDouble() * 0.0174533)).toFloat()
+                            val labelYOffsetOutside =
+                                radius + ((measure.size.height + radius) * sin(angleA.toDouble() * 0.0174533)).toFloat()
 
-                        val labelXOffsetEdge =
-                            radius + (radius * sin(angleB.toDouble() * 0.0174533)).toFloat()
-                        val labelYOffsetEdge =
-                            radius + (radius * sin(angleA.toDouble() * 0.0174533)).toFloat()
+                            val labelXOffsetEdge =
+                                radius + (radius * sin(angleB.toDouble() * 0.0174533)).toFloat()
+                            val labelYOffsetEdge =
+                                radius + (radius * sin(angleA.toDouble() * 0.0174533)).toFloat()
 
-                        when (chartPoint.labelPosition) {
+                            when (chartPoint.labelPosition) {
 
-                            PieChartLabelPosition.INSIDE -> {
-                                // draw the label
-                                drawText(
-                                    topLeft = Offset(
-                                        labelXOffset - (measure.size.width / 2),
-                                        labelYOffset - (measure.size.height / 2)
-                                    ),
-                                    textLayoutResult = measure
-                                )
+                                PieChartLabelPosition.INSIDE -> {
+                                    // draw the label
+                                    drawText(
+                                        topLeft = Offset(
+                                            labelXOffset - (measure.size.width / 2),
+                                            labelYOffset - (measure.size.height / 2)
+                                        ),
+                                        textLayoutResult = measure
+                                    )
+                                }
+
+                                PieChartLabelPosition.OUTSIDE -> {
+                                    drawText(
+                                        topLeft = Offset(
+                                            labelXOffsetOutside - (measure.size.width / 2),
+                                            labelYOffsetOutside - (measure.size.height / 2)
+                                        ),
+                                        textLayoutResult = measure
+                                    )
+                                }
+
+                                PieChartLabelPosition.EDGE -> {
+                                    drawText(
+                                        topLeft = Offset(
+                                            labelXOffsetEdge - (measure.size.width / 2),
+                                            labelYOffsetEdge - (measure.size.height / 2)
+                                        ),
+                                        textLayoutResult = measure
+                                    )
+                                }
+
+                                PieChartLabelPosition.INVISIBLE -> {}
                             }
 
-                            PieChartLabelPosition.OUTSIDE -> {
-                                drawText(
-                                    topLeft = Offset(
-                                        labelXOffsetOutside - (measure.size.width / 2),
-                                        labelYOffsetOutside - (measure.size.height / 2)
-                                    ),
-                                    textLayoutResult = measure
-                                )
-                            }
 
-                            PieChartLabelPosition.EDGE -> {
-                                drawText(
-                                    topLeft = Offset(
-                                        labelXOffsetEdge - (measure.size.width / 2),
-                                        labelYOffsetEdge - (measure.size.height / 2)
-                                    ),
-                                    textLayoutResult = measure
-                                )
-                            }
+                            startAngle += sweepAngle
 
-                            PieChartLabelPosition.INVISIBLE -> {}
                         }
 
 
-                        startAngle += sweepAngle
-
                     }
-
-
-                }
-            }) {
+                }) {
+            }
         }
     }
 

@@ -2,7 +2,6 @@ package com.niallermoran.charteasy
 
 import android.graphics.PointF
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -103,13 +102,9 @@ private fun DrawLineBarChart(
         // take an x and y value to calculate the spans for the axis
         val x = config.leftAxisConfig.dataPoints.maxOf { it.xValue }
         val y = config.leftAxisConfig.dataPoints.maxOf { it.yValue }
-        val z =
-            if (config.rightAxisConfig != null) config.rightAxisConfig.dataPoints.maxOf { it.yValue } else 0f
 
         val yText =
             if (formatLeftAxisLabel != null) formatLeftAxisLabel(0, y) else y.toInt().toString()
-        val zText =
-            if (formatRightAxisLabel != null) formatRightAxisLabel(0, z) else z.toInt().toString()
         val xText =
             if (formatBottomAxisLabel != null) formatBottomAxisLabel(0, x, null) else x.toInt()
                 .toString()
@@ -351,11 +346,15 @@ private fun YAxisTicksAndLabels(
         val maxY = config.maxY ?: points.maxOf { it.yValue }
 
         // get a count of labels to display
-        val labelCount =
+        var labelCount =
             when (config.maxNumberOfLabelsToDisplay) {
                 null -> points.size
                 else -> config.maxNumberOfLabelsToDisplay
             }
+
+        // fix for divide by zero bug
+        if(labelCount <2 )
+            labelCount = 2
 
         // gap between ticks on y axis
         val heightDelta = height / (labelCount - 1)
