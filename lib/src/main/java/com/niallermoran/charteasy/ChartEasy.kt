@@ -4,7 +4,9 @@ import android.graphics.PointF
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.DrawResult
@@ -44,13 +46,22 @@ fun Chart(
         onPlotAreaTap = onPlotAreaTap
     )
 
-    DrawLineBarChart(
-        config,
-        formatLeftAxisLabel,
-        null,
-        formatBottomAxisLabel,
-        modifier
-    )
+    if( leftAxisConfig.dataPoints.size > 1) {
+        DrawLineBarChart(
+            config,
+            formatLeftAxisLabel,
+            null,
+            formatBottomAxisLabel,
+            modifier
+        )
+    }
+    else
+    {
+        Box(modifier = Modifier.fillMaxSize().height(chartConfig.height))
+        {
+            Text(text = "Not enough data", modifier=Modifier.align(Alignment.Center))
+        }
+    }
 }
 
 /**
@@ -77,13 +88,22 @@ fun MixedChart(
         rightAxisConfig = rightAxisConfig
     )
 
-    DrawLineBarChart(
-        config,
-        formatLeftAxisLabel,
-        formatRightAxisLabel,
-        formatBottomAxisLabel,
-        modifier
-    )
+    if( leftAxisConfig.dataPoints.size > 1) {
+        DrawLineBarChart(
+            config,
+            formatLeftAxisLabel,
+            formatRightAxisLabel,
+            formatBottomAxisLabel,
+            modifier
+        )
+    }
+    else
+    {
+        Box(modifier = Modifier.fillMaxSize().height(chartConfig.height))
+        {
+            Text(text = "Not enough data", modifier=Modifier.align(Alignment.Center))
+        }
+    }
 }
 
 
@@ -353,7 +373,7 @@ private fun YAxisTicksAndLabels(
             }
 
         // fix for divide by zero bug
-        if(labelCount <2 )
+        if (labelCount < 2)
             labelCount = 2
 
         // gap between ticks on y axis
@@ -814,11 +834,13 @@ private fun CacheDrawScope.drawSpline(
             style = Stroke(width = config.lineStrokeWidth.value)
         )
 
-        drawPath(
-            path = pathSpline,
-            color = config.lineColor,
-            style = Stroke(width = config.lineStrokeWidth.value)
-        )
+        if (points.size > 2) {
+            drawPath(
+                path = pathSpline,
+                color = config.lineColor,
+                style = Stroke(width = config.lineStrokeWidth.value)
+            )
+        }
 
         if (config.showFillColour) {
             drawPath(
@@ -830,18 +852,28 @@ private fun CacheDrawScope.drawSpline(
         }
 
         if (config.showCircles) {
-            for (i in 1..points.size) {
-                val point = points[i - 1]
-                val x = width * (point.xValue - xMin) / (xMax - xMin)
-                val y =
-                    height - (height * (point.yValue - yMin) / (yMax - yMin))
 
+            if (points.size == 1) {
                 drawCircle(
                     color = config.circleColor,
-                    center = Offset(x, y),
+                    center = Offset(width, height),
                     radius = config.circleRadius.value,
 
                     )
+            } else {
+                for (i in 1..points.size) {
+                    val point = points[i - 1]
+                    val x = width * (point.xValue - xMin) / (xMax - xMin)
+                    val y =
+                        height - (height * (point.yValue - yMin) / (yMax - yMin))
+
+                    drawCircle(
+                        color = config.circleColor,
+                        center = Offset(x, y),
+                        radius = config.circleRadius.value,
+
+                        )
+                }
             }
         }
 

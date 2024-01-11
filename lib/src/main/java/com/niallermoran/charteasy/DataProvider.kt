@@ -32,7 +32,7 @@ class DataProvider {
 
     private fun generateRandomIntegers(): ArrayList<ChartPoint> {
 
-        val n = 6
+        val n = 0
 
         // generate some data
         val randomX = List(n) { Random.nextInt(0, 100) }
@@ -40,7 +40,7 @@ class DataProvider {
 
         // create the chart points
         val points = ArrayList<ChartPoint>(n)
-        for (i in 0..<n) {
+        for (i in 0..n) {
             points.add(
                 i, ChartPoint(
                     xValue = randomX[i].toFloat(),
@@ -54,7 +54,7 @@ class DataProvider {
     @OptIn(ExperimentalTime::class)
     private fun generateTimeSeries(): ArrayList<ChartPoint> {
 
-        val n = 6
+        val n = 0
 
         // get a 30 day date range
         val now = Date().time
@@ -66,7 +66,7 @@ class DataProvider {
 
         // create the chart points
         val points = ArrayList<ChartPoint>(n)
-        for (i in 0..<n) {
+        for (i in 0..n) {
             points.add(
                 i, ChartPoint(
                     xValue = randomX[i].toFloat(),
