@@ -373,7 +373,7 @@ private fun YAxisTicksAndLabels(
             }
 
         // fix for divide by zero bug
-        if (labelCount < 2)
+        if(labelCount <2 )
             labelCount = 2
 
         // gap between ticks on y axis
