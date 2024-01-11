@@ -124,4 +124,51 @@ class DataProvider {
     )
 
 
+    private fun generatePiePointsWithZeroValues() = listOf<PiePoint>(
+        PiePoint(
+            label = "1 \n Jan",
+            yValue = 0.0f,
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
+            overflow = TextOverflow.Visible
+        ),
+        PiePoint(
+            label = "2 \n Feb",
+            yValue =0.0f,
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
+        ),
+        PiePoint(
+            label = "3 \n Mar",
+            yValue =0.0f,
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
+        ),
+        PiePoint(
+            label = "4 \n Apr",
+            yValue =0.0f,
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
+        ),
+        PiePoint(
+            label = "5 \n May",
+            yValue =0.0f,
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
+        ),
+        PiePoint(
+            label = "6 \n Jun",
+            yValue =0.0f,
+            labelPosition = PieChartLabelPosition.INSIDE,
+            maxLinesForLabel = 2,
+            labelStyle = TextStyle(color= Color.White, textAlign = TextAlign.Center),
+        )
+    )
+
+
 }
