@@ -57,7 +57,7 @@ fun Chart(
     }
     else
     {
-        Box(modifier = Modifier.fillMaxSize().height(chartConfig.height))
+        Box(modifier = Modifier.fillMaxSize())
         {
             Text(text = "Not enough data", modifier=Modifier.align(Alignment.Center))
         }
@@ -99,7 +99,7 @@ fun MixedChart(
     }
     else
     {
-        Box(modifier = Modifier.fillMaxSize().height(chartConfig.height))
+        Box(modifier = Modifier.fillMaxSize())
         {
             Text(text = "Not enough data", modifier=Modifier.align(Alignment.Center))
         }
@@ -178,8 +178,7 @@ private fun DrawLineBarChart(
 
         BoxWithConstraints(
             modifier = modifier
-                .fillMaxWidth()
-                .height(config.chartConfig.height)
+                .fillMaxSize()
         ) {
 
 
@@ -1015,7 +1014,6 @@ data class AxisConfig(
 
 data class ChartConfig(
 
-    val height: Dp = 300.dp,
     val plotAreaPadding: PaddingValues = PaddingValues(start = 0.dp, end = 0.dp),
 
     /**

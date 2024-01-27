@@ -245,7 +245,8 @@ fun SamplesCharts() {
                     axisColor = Color.Gray,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    maxNumberOfLabelsToDisplay = 5
                 ),
                 formatBottomAxisLabel = { _, x, _ ->
                     // x represents an epoch in milliseconds
@@ -284,7 +285,8 @@ fun SamplesCharts() {
                     axisColor = Color.Gray,
                     display = showAxes,
                     displayLabels = showLabels,
-                    displayTicks = showTicks
+                    displayTicks = showTicks,
+                    maxNumberOfLabelsToDisplay = 5
                 ),
                 formatBottomAxisLabel = { _, x, _ ->
                     // x represents an epoch in milliseconds
@@ -342,6 +344,7 @@ fun SamplesCharts() {
                     labelStyle = TextStyle(fontSize = 10.sp),
                     labelMaxLines = 2,
                     labelOverflow = TextOverflow.Visible,
+                    maxNumberOfLabelsToDisplay = 5
                 ),
                 formatBottomAxisLabel = { _, x, _ ->
                     // x represents an epoch in milliseconds
