@@ -361,6 +361,10 @@ fun SamplesCharts() {
                     val date = Date(x.toLong())
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
                     dateFormatter.format(date)
+                },
+                formatPointLabel = {
+                    val y = it.yValue* 10f.toInt()/10f
+                    y.toString()
                 }
             )
         }
