@@ -927,7 +927,6 @@ private fun CacheDrawScope.drawSpline(
 
                     drawText(
                         textLayoutResult = measure,
-                        color = Color.Blue,
                         topLeft = Offset(x,y)
                     )
                 }
