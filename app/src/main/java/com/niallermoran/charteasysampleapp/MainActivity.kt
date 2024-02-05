@@ -215,8 +215,8 @@ fun SamplesCharts() {
                     displayTicks = showTicks,
                     labelStyle = TextStyle(color = Color.Red)
                 ),
-                formatPointLabel = {
-                     val rounded = it.yValue.toInt().toString()
+                formatPointLabel = { index, point->
+                     val rounded = point.yValue.toInt().toString()
                     rounded
                 }
             )
@@ -300,8 +300,8 @@ fun SamplesCharts() {
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
                     dateFormatter.format(date)
                 },
-                formatPointLabel = {
-                    val y = it.yValue* 10f.toInt()/10f
+                formatPointLabel = { index, point->
+                    val y = point.yValue* 10f.toInt()/10f
                     y.toString()
                 }
             )
@@ -362,8 +362,8 @@ fun SamplesCharts() {
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
                     dateFormatter.format(date)
                 },
-                formatPointLabel = {
-                    val y = it.yValue* 10f.toInt()/10f
+                formatPointLabel = { index, point ->
+                    val y = point.yValue* 10f.toInt()/10f
                     y.toString()
                 }
             )

@@ -37,7 +37,7 @@ fun Chart(
     bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
-    formatPointLabel: ((ChartPoint) -> String)? = null,
+    formatPointLabel: ((Int,ChartPoint) -> String)? = null,
     onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
 ) {
     val config = Config(
@@ -80,7 +80,7 @@ fun MixedChart(
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
     formatRightAxisLabel: ((Int, Float) -> String)? = null,
-    formatPointLabel: ((ChartPoint) -> String)? = null,
+    formatPointLabel: ((Int, ChartPoint) -> String)? = null,
     onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
 ) {
     val config = Config(
@@ -117,7 +117,7 @@ private fun DrawLineBarChart(
     formatLeftAxisLabel: ((Int, Float) -> String)?,
     formatRightAxisLabel: ((Int, Float) -> String)?,
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)?,
-    formatPointLabel: ((ChartPoint) -> String)? = null,
+    formatPointLabel: ((Int, ChartPoint) -> String)? = null,
     modifier: Modifier
 ) {
     if (config.leftAxisConfig != null) {
@@ -594,7 +594,7 @@ private fun DrawBottomAxisTicksAndLabels(
 @Composable
 private fun DrawBarChart(config: Config,
                          textMeasurer: TextMeasurer,
-                         formatPointLabel: ((ChartPoint) -> String)?) {
+                         formatPointLabel: ((Int,ChartPoint) -> String)?) {
 
     if (config.leftAxisConfig != null) {
         val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
@@ -682,7 +682,7 @@ private fun DrawBarChart(config: Config,
                                         }
 
                                         if (formatPointLabel != null) {
-                                                val text = formatPointLabel(chartPoint)
+                                                val text = formatPointLabel(index,chartPoint)
                                                 val measure = textMeasurer.measure(
                                                     text,
                                                     config.leftAxisConfig.pointLabelStyle,
@@ -719,7 +719,7 @@ private fun DrawBarChart(config: Config,
 @Composable
 private fun DrawLineChart(config: AxisConfig,
                           onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
-                          formatPointLabel: ((ChartPoint) -> String)?
+                          formatPointLabel: ((Int, ChartPoint) -> String)?
 ) {
 
     val pointsSortedByX = config.dataPoints.sortedBy { it.xValue }
@@ -786,7 +786,7 @@ private fun CacheDrawScope.drawSpline(
     yMax: Float,
     config: AxisConfig,
     textMeasurer: TextMeasurer,
-    formatPointLabel: ((ChartPoint) -> String)?,
+    formatPointLabel: ((Int,ChartPoint) -> String)?,
 ): DrawResult {
     val linePoints = ArrayList<PointF>()
     for (point in points) {
@@ -914,7 +914,7 @@ private fun CacheDrawScope.drawSpline(
 
                 for (i in 1..points.size) {
                     val point = points[i - 1]
-                    val text = formatPointLabel(point)
+                    val text = formatPointLabel(i,point)
                     val measure = textMeasurer.measure(
                         text,
                         config.pointLabelStyle,
