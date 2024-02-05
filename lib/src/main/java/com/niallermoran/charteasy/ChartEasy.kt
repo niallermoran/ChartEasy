@@ -595,7 +595,6 @@ private fun DrawBottomAxisTicksAndLabels(
 private fun DrawBarChart(config: Config,
                          textMeasurer: TextMeasurer,
                          formatPointLabel: ((Int,ChartPoint) -> String)?) {
-
     if (config.leftAxisConfig != null) {
         val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
         val density = LocalDensity.current
@@ -786,8 +785,8 @@ private fun CacheDrawScope.drawSpline(
     yMax: Float,
     config: AxisConfig,
     textMeasurer: TextMeasurer,
-    formatPointLabel: ((Int,ChartPoint) -> String)?,
-): DrawResult {
+    formatPointLabel: ((Int,ChartPoint) -> String)?
+    ): DrawResult {
     val linePoints = ArrayList<PointF>()
     for (point in points) {
         // actual point add to path
