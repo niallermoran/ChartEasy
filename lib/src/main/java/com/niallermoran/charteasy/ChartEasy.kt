@@ -38,7 +38,7 @@ fun Chart(
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
     formatPointLabel: ((Int,ChartPoint) -> String)? = null,
-    onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+    onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
 ) {
     val config = Config(
         chartConfig = chartConfig,
@@ -81,7 +81,7 @@ fun MixedChart(
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
     formatRightAxisLabel: ((Int, Float) -> String)? = null,
     formatPointLabel: ((Int, ChartPoint) -> String)? = null,
-    onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+    onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
 ) {
     val config = Config(
         chartConfig = chartConfig,
@@ -651,7 +651,7 @@ private fun DrawBarChart(config: Config,
                                 detectTapGestures(
                                     onTap = {
                                         val lambda = config.onPlotAreaTap
-                                        lambda(chartPoint)
+                                        lambda(chartPoint, it)
                                     }
                                 )
                             }
@@ -717,7 +717,7 @@ private fun DrawBarChart(config: Config,
 
 @Composable
 private fun DrawLineChart(config: AxisConfig,
-                          onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+                          onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
                           formatPointLabel: ((Int, ChartPoint) -> String)?
 ) {
 
@@ -753,7 +753,7 @@ private fun DrawLineChart(config: AxisConfig,
                                     if (pointIndex > points.size - 1) pointIndex = points.size - 1
                                     val point = points[pointIndex]
                                     val lambda = onPlotAreaTap
-                                    lambda(point)
+                                    lambda(point, it)
                                 }
                             )
                         }
@@ -1110,7 +1110,7 @@ private data class Config(
     val leftAxisConfig: AxisConfig? = null,
     val rightAxisConfig: AxisConfig? = null,
     val bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
-    val onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+    val onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
 )
 
 /**
