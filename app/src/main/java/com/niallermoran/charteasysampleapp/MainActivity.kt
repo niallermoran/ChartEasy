@@ -71,16 +71,16 @@ fun SamplesCharts() {
     /**
      * Create a min and max value for the y-axis so we have some buffer
      */
-    val minY = if(points.size>0) points.minOf { it.yValue } * 0.95f else 0.0f
-    val maxY = if(points.size>0) points.maxOf { it.yValue } * 1.05f else 0.0f
+    val minY = if(points.size>0) points.minOf { it.yValue } * 0.99f else 0.0f
+    val maxY = if(points.size>0) points.maxOf { it.yValue } * 1.01f else 0.0f
 
     /**
      * Create a min and max value for the y-axis so we have some buffer
      */
-    val minYTimeSeries1 = if(points.size>0) timeSeries1.minOf { it.yValue } * 0.95f else 0.0f
-    val maxYTimeSeries1 = if(points.size>0)timeSeries1.maxOf { it.yValue } * 1.05f else 0.0f
-    val minYTimeSeries2 = if(points.size>0)timeSeries2.minOf { it.yValue } * 0.95f else 0.0f
-    val maxYTimeSeries2 = if(points.size>0)timeSeries2.maxOf { it.yValue } * 1.05f else 0.0f
+    val minYTimeSeries1 = timeSeries1.minOf { it.yValue }
+    val maxYTimeSeries1 = timeSeries1.maxOf { it.yValue }
+    val minYTimeSeries2 = timeSeries2.minOf { it.yValue }
+    val maxYTimeSeries2 = timeSeries2.maxOf { it.yValue }
 
     var smoothLineCharts by rememberSaveable { mutableStateOf(true) }
     var fillCharts by rememberSaveable { mutableStateOf(true) }
