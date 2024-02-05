@@ -205,7 +205,11 @@ fun SamplesCharts() {
                     displayTicks = showTicks,
                     lineStrokeWidth = lineThickness.dp,
                     labelStyle = TextStyle(color = Color.Red),
-                    pointLabelStyle = TextStyle(color = Color.Red, fontSize = 9.sp)
+                    pointLabelStyle = TextStyle(color = Color.Red, fontSize = 9.sp),
+                    formatPointLabel = { index, point->
+                        val rounded = point.yValue.toInt().toString()
+                        rounded
+                    }
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -214,11 +218,7 @@ fun SamplesCharts() {
                     displayLabels = showLabels,
                     displayTicks = showTicks,
                     labelStyle = TextStyle(color = Color.Red)
-                ),
-                formatPointLabel = { index, point->
-                     val rounded = point.yValue.toInt().toString()
-                    rounded
-                }
+                )
             )
         }
 
@@ -285,6 +285,10 @@ fun SamplesCharts() {
                     displayTicks = showTicks,
                     lineStrokeWidth = lineThickness.dp,
                             pointLabelStyle = TextStyle(color = Color.Red, fontSize = 9.sp),
+                    formatPointLabel = { index, point->
+                        val y = point.yValue* 10f.toInt()/10f
+                        y.toString()
+                    }
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -299,10 +303,6 @@ fun SamplesCharts() {
                     val date = Date(x.toLong())
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
                     dateFormatter.format(date)
-                },
-                formatPointLabel = { index, point->
-                    val y = point.yValue* 10f.toInt()/10f
-                    y.toString()
                 }
             )
         }
@@ -328,7 +328,11 @@ fun SamplesCharts() {
                     display = showAxes,
                     displayLabels = showLabels,
                     displayTicks = showTicks,
-                    lineStrokeWidth = lineThickness.dp
+                    lineStrokeWidth = lineThickness.dp,
+                    formatPointLabel = { index, point ->
+                        val y = point.yValue* 10f.toInt()/10f
+                        y.toString()
+                    }
                 ),
                 rightAxisConfig = AxisConfig(
                     dataPoints = timeSeries2,
@@ -343,7 +347,11 @@ fun SamplesCharts() {
                     display = showAxes,
                     displayLabels = showLabels,
                     displayTicks = showTicks,
-                    lineStrokeWidth = lineThickness.dp
+                    lineStrokeWidth = lineThickness.dp,
+                    formatPointLabel = { index, point ->
+                        val y = point.yValue* 10f.toInt()/10f
+                        y.toString()
+                    }
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -361,10 +369,6 @@ fun SamplesCharts() {
                     val date = Date(x.toLong())
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
                     dateFormatter.format(date)
-                },
-                formatPointLabel = { index, point ->
-                    val y = point.yValue* 10f.toInt()/10f
-                    y.toString()
                 }
             )
         }

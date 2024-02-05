@@ -37,7 +37,6 @@ fun Chart(
     bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
-    formatPointLabel: ((Int,ChartPoint) -> String)? = null,
     onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
 ) {
     val config = Config(
@@ -53,7 +52,6 @@ fun Chart(
             formatLeftAxisLabel,
             null,
             formatBottomAxisLabel,
-            formatPointLabel,
             modifier
         )
     }
@@ -80,7 +78,6 @@ fun MixedChart(
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
     formatRightAxisLabel: ((Int, Float) -> String)? = null,
-    formatPointLabel: ((Int, ChartPoint) -> String)? = null,
     onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
 ) {
     val config = Config(
@@ -97,7 +94,6 @@ fun MixedChart(
             formatLeftAxisLabel,
             formatRightAxisLabel,
             formatBottomAxisLabel,
-            formatPointLabel,
             modifier
         )
     }
@@ -117,7 +113,6 @@ private fun DrawLineBarChart(
     formatLeftAxisLabel: ((Int, Float) -> String)?,
     formatRightAxisLabel: ((Int, Float) -> String)?,
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)?,
-    formatPointLabel: ((Int, ChartPoint) -> String)? = null,
     modifier: Modifier
 ) {
     if (config.leftAxisConfig != null) {
@@ -253,20 +248,20 @@ private fun DrawLineBarChart(
                                 DrawLineChart(
                                     config.leftAxisConfig,
                                     config.onPlotAreaTap,
-                                    formatPointLabel
+                                    config.leftAxisConfig.formatPointLabel
                                 )
                             else
-                                DrawBarChart(config, textMeasurer, formatPointLabel)
+                                DrawBarChart(config, textMeasurer, config.leftAxisConfig.formatPointLabel)
 
                             config.rightAxisConfig?.let {
                                 if (it.type == AxisType.Line)
                                     DrawLineChart(
                                         config.rightAxisConfig,
                                         config.onPlotAreaTap,
-                                        formatPointLabel
+                                        config.rightAxisConfig.formatPointLabel
                                     )
                                 else
-                                    DrawBarChart(config, textMeasurer , formatPointLabel)
+                                    DrawBarChart(config, textMeasurer , config.rightAxisConfig.formatPointLabel)
                             }
                         }
 
@@ -1064,6 +1059,7 @@ data class AxisConfig(
         background = Color.Transparent,
     ),
 
+    val formatPointLabel: ((Int,ChartPoint) -> String)? = null,
 
     /**
      * Defines the style for point labels when formatPointLabel is defined
