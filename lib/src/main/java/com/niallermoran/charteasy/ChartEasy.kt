@@ -37,6 +37,7 @@ fun Chart(
     bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
+    formatPointLabel: ((ChartPoint) -> String)? = null,
     onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
 ) {
     val config = Config(
@@ -52,6 +53,7 @@ fun Chart(
             formatLeftAxisLabel,
             null,
             formatBottomAxisLabel,
+            formatPointLabel,
             modifier
         )
     }
@@ -78,6 +80,7 @@ fun MixedChart(
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
     formatRightAxisLabel: ((Int, Float) -> String)? = null,
+    formatPointLabel: ((ChartPoint) -> String)? = null,
     onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
 ) {
     val config = Config(
@@ -94,6 +97,7 @@ fun MixedChart(
             formatLeftAxisLabel,
             formatRightAxisLabel,
             formatBottomAxisLabel,
+            formatPointLabel,
             modifier
         )
     }
@@ -113,6 +117,7 @@ private fun DrawLineBarChart(
     formatLeftAxisLabel: ((Int, Float) -> String)?,
     formatRightAxisLabel: ((Int, Float) -> String)?,
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)?,
+    formatPointLabel: ((ChartPoint) -> String)? = null,
     modifier: Modifier
 ) {
     if (config.leftAxisConfig != null) {
@@ -247,19 +252,21 @@ private fun DrawLineBarChart(
                             if (config.leftAxisConfig.type == AxisType.Line)
                                 DrawLineChart(
                                     config.leftAxisConfig,
-                                    config.onPlotAreaTap
+                                    config.onPlotAreaTap,
+                                    formatPointLabel
                                 )
                             else
-                                DrawBarChart(config)
+                                DrawBarChart(config, textMeasurer, formatPointLabel)
 
                             config.rightAxisConfig?.let {
                                 if (it.type == AxisType.Line)
                                     DrawLineChart(
                                         config.rightAxisConfig,
-                                        config.onPlotAreaTap
+                                        config.onPlotAreaTap,
+                                        formatPointLabel
                                     )
                                 else
-                                    DrawBarChart(config)
+                                    DrawBarChart(config, textMeasurer , formatPointLabel)
                             }
                         }
 
@@ -585,7 +592,9 @@ private fun DrawBottomAxisTicksAndLabels(
 
 
 @Composable
-private fun DrawBarChart(config: Config) {
+private fun DrawBarChart(config: Config,
+                         textMeasurer: TextMeasurer,
+                         formatPointLabel: ((ChartPoint) -> String)?) {
 
     if (config.leftAxisConfig != null) {
         val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
@@ -672,6 +681,24 @@ private fun DrawBarChart(config: Config) {
                                             )
                                         }
 
+                                        if (formatPointLabel != null) {
+                                                val text = formatPointLabel(chartPoint)
+                                                val measure = textMeasurer.measure(
+                                                    text,
+                                                    config.leftAxisConfig.pointLabelStyle,
+                                                    config.leftAxisConfig.labelOverflow,
+                                                    maxLines = 1
+                                                )
+
+                                                val x = (barWidth - measure.size.width)/2f
+                                                val yText = y - ((measure.size.height)*1.5f)
+
+
+                                                drawText(
+                                                    textLayoutResult = measure,
+                                                    topLeft = Offset(x,yText)
+                                                )
+                                            }
                                     }
                                 }
                         ) {
@@ -690,9 +717,13 @@ private fun DrawBarChart(config: Config) {
 }
 
 @Composable
-private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Unit)? = null) {
+private fun DrawLineChart(config: AxisConfig,
+                          onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+                          formatPointLabel: ((ChartPoint) -> String)?
+) {
 
     val pointsSortedByX = config.dataPoints.sortedBy { it.xValue }
+    val textMeasurer = rememberTextMeasurer()
 
     pointsSortedByX.let { points ->
 
@@ -712,7 +743,7 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                     modifier = Modifier
                         .fillMaxSize()
                         .drawWithCache {
-                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config)
+                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config, textMeasurer, formatPointLabel)
                         }
                         .pointerInput(key1 = Unit) {
                             detectTapGestures(
@@ -735,7 +766,7 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                     modifier = Modifier
                         .fillMaxSize()
                         .drawWithCache {
-                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config)
+                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config, textMeasurer, formatPointLabel = formatPointLabel)
                         }
                 ) {
 
@@ -753,7 +784,9 @@ private fun CacheDrawScope.drawSpline(
     height: Float,
     yMin: Float,
     yMax: Float,
-    config: AxisConfig
+    config: AxisConfig,
+    textMeasurer: TextMeasurer,
+    formatPointLabel: ((ChartPoint) -> String)?,
 ): DrawResult {
     val linePoints = ArrayList<PointF>()
     for (point in points) {
@@ -825,6 +858,7 @@ private fun CacheDrawScope.drawSpline(
     }
 
 
+
     return onDrawBehind {
 
         drawPath(
@@ -874,6 +908,30 @@ private fun CacheDrawScope.drawSpline(
                         )
                 }
             }
+        }
+
+        if (formatPointLabel != null) {
+
+                for (i in 1..points.size) {
+                    val point = points[i - 1]
+                    val text = formatPointLabel(point)
+                    val measure = textMeasurer.measure(
+                        text,
+                        config.pointLabelStyle,
+                        config.labelOverflow,
+                        maxLines = 1
+                    )
+
+                    val x = (width * (point.xValue - xMin) / (xMax - xMin)) - (measure.size.width/2)
+                    val y = height - (height * (point.yValue - yMin) / (yMax - yMin))  - ((measure.size.height)*1.5f)
+
+
+                    drawText(
+                        textLayoutResult = measure,
+                        color = Color.Blue,
+                        topLeft = Offset(x,y)
+                    )
+                }
         }
 
     }
@@ -1003,6 +1061,16 @@ data class AxisConfig(
     val labelPaddingStart: Dp = 2.dp,
 
     val labelStyle: TextStyle = TextStyle(
+        fontSize = 12.sp,
+        textAlign = TextAlign.Center,
+        background = Color.Transparent,
+    ),
+
+
+    /**
+     * Defines the style for point labels when formatPointLabel is defined
+     */
+    val pointLabelStyle: TextStyle = TextStyle(
         fontSize = 12.sp,
         textAlign = TextAlign.Center,
         background = Color.Transparent,

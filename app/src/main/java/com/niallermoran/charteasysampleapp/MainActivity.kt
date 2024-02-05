@@ -204,7 +204,8 @@ fun SamplesCharts() {
                     displayLabels = showLabels,
                     displayTicks = showTicks,
                     lineStrokeWidth = lineThickness.dp,
-                    labelStyle = TextStyle(color = Color.Red)
+                    labelStyle = TextStyle(color = Color.Red),
+                    pointLabelStyle = TextStyle(color = Color.Red, fontSize = 9.sp)
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -213,7 +214,11 @@ fun SamplesCharts() {
                     displayLabels = showLabels,
                     displayTicks = showTicks,
                     labelStyle = TextStyle(color = Color.Red)
-                )
+                ),
+                formatPointLabel = {
+                     val rounded = it.yValue.toInt().toString()
+                    rounded
+                }
             )
         }
 
@@ -278,7 +283,8 @@ fun SamplesCharts() {
                     display = showAxes,
                     displayLabels = showLabels,
                     displayTicks = showTicks,
-                    lineStrokeWidth = lineThickness.dp
+                    lineStrokeWidth = lineThickness.dp,
+                            pointLabelStyle = TextStyle(color = Color.Red, fontSize = 9.sp),
                 ),
                 bottomAxisConfig = BottomAxisConfig(
                     tickColor = Color.Gray,
@@ -293,6 +299,10 @@ fun SamplesCharts() {
                     val date = Date(x.toLong())
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
                     dateFormatter.format(date)
+                },
+                formatPointLabel = {
+                    val y = it.yValue* 10f.toInt()/10f
+                    y.toString()
                 }
             )
         }
@@ -351,6 +361,10 @@ fun SamplesCharts() {
                     val date = Date(x.toLong())
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
                     dateFormatter.format(date)
+                },
+                formatPointLabel = {
+                    val y = it.yValue* 10f.toInt()/10f
+                    y.toString()
                 }
             )
         }
