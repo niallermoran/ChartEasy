@@ -35,7 +35,8 @@ fun EasyCard(
             .clickable(onClick = {
                 if (onCardTap != null)
                     onCardTap()
-            }),
+            })
+            .height(300.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
         )
