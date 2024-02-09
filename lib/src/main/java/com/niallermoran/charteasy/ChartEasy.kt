@@ -52,7 +52,7 @@ fun Chart(
             formatLeftAxisLabel,
             null,
             formatBottomAxisLabel,
-            modifier
+            modifier = modifier
         )
     }
     else
@@ -94,7 +94,7 @@ fun MixedChart(
             formatLeftAxisLabel,
             formatRightAxisLabel,
             formatBottomAxisLabel,
-            modifier
+            modifier = modifier
         )
     }
     else
@@ -113,6 +113,7 @@ private fun DrawLineBarChart(
     formatLeftAxisLabel: ((Int, Float) -> String)?,
     formatRightAxisLabel: ((Int, Float) -> String)?,
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)?,
+    formatBarLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     modifier: Modifier
 ) {
     if (config.leftAxisConfig != null) {
@@ -585,7 +586,7 @@ private fun DrawBottomAxisTicksAndLabels(
 
 
 @Composable
-private fun DrawBarChart(config: Config) {
+private fun DrawBarChart(config: Config,  formatBarLabel: ((Int, Float, ChartPoint?) -> String)? = null,) {
 
     if (config.leftAxisConfig != null) {
         val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
@@ -649,6 +650,15 @@ private fun DrawBarChart(config: Config) {
                             }
                         }
 
+                        val barLabelText  = if( formatBarLabel == null ) "" else formatBarLabel(index, chartPoint.yValue, chartPoint)
+
+                        val barLabelMeasure = rememberTextMeasurer().measure(
+                            barLabelText,
+                            config.bottomAxisConfig.labelStyle,
+                            config.bottomAxisConfig.labelOverflow,
+                            maxLines = 1
+                        )
+
                         // create a canvas to draw the bar
                         Canvas(
                             modifier = modifier
@@ -662,6 +672,14 @@ private fun DrawBarChart(config: Config) {
                                             color = config.leftAxisConfig.lineColor,
                                             style = Stroke(width = config.leftAxisConfig.lineStrokeWidth.value)
                                         )
+
+                                        if(formatBarLabel !=null)
+                                        {
+                                            drawText(
+                                                textLayoutResult = barLabelMeasure,
+                                                topLeft = Offset( width/2, y)
+                                            )
+                                        }
 
                                         if (config.leftAxisConfig.showFillColour) {
                                             drawPath(
