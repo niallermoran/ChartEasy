@@ -37,7 +37,7 @@ fun Chart(
     bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
-    onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+    onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
 ) {
     val config = Config(
         chartConfig = chartConfig,
@@ -52,7 +52,7 @@ fun Chart(
             formatLeftAxisLabel,
             null,
             formatBottomAxisLabel,
-            modifier = modifier
+            modifier
         )
     }
     else
@@ -78,7 +78,7 @@ fun MixedChart(
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     formatLeftAxisLabel: ((Int, Float) -> String)? = null,
     formatRightAxisLabel: ((Int, Float) -> String)? = null,
-    onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+    onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
 ) {
     val config = Config(
         chartConfig = chartConfig,
@@ -94,7 +94,7 @@ fun MixedChart(
             formatLeftAxisLabel,
             formatRightAxisLabel,
             formatBottomAxisLabel,
-            modifier = modifier
+            modifier
         )
     }
     else
@@ -113,7 +113,6 @@ private fun DrawLineBarChart(
     formatLeftAxisLabel: ((Int, Float) -> String)?,
     formatRightAxisLabel: ((Int, Float) -> String)?,
     formatBottomAxisLabel: ((Int, Float, ChartPoint?) -> String)?,
-    formatBarLabel: ((Int, Float, ChartPoint?) -> String)? = null,
     modifier: Modifier
 ) {
     if (config.leftAxisConfig != null) {
@@ -248,19 +247,21 @@ private fun DrawLineBarChart(
                             if (config.leftAxisConfig.type == AxisType.Line)
                                 DrawLineChart(
                                     config.leftAxisConfig,
-                                    config.onPlotAreaTap
+                                    config.onPlotAreaTap,
+                                    config.leftAxisConfig.formatPointLabel
                                 )
                             else
-                                DrawBarChart(config)
+                                DrawBarChart(config, textMeasurer, config.leftAxisConfig.formatPointLabel)
 
                             config.rightAxisConfig?.let {
                                 if (it.type == AxisType.Line)
                                     DrawLineChart(
                                         config.rightAxisConfig,
-                                        config.onPlotAreaTap
+                                        config.onPlotAreaTap,
+                                        config.rightAxisConfig.formatPointLabel
                                     )
                                 else
-                                    DrawBarChart(config)
+                                    DrawBarChart(config, textMeasurer , config.rightAxisConfig.formatPointLabel)
                             }
                         }
 
@@ -586,8 +587,9 @@ private fun DrawBottomAxisTicksAndLabels(
 
 
 @Composable
-private fun DrawBarChart(config: Config,  formatBarLabel: ((Int, Float, ChartPoint?) -> String)? = null,) {
-
+private fun DrawBarChart(config: Config,
+                         textMeasurer: TextMeasurer,
+                         formatPointLabel: ((Int,ChartPoint) -> String)?) {
     if (config.leftAxisConfig != null) {
         val pointsSortedByX = config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
         val density = LocalDensity.current
@@ -644,20 +646,11 @@ private fun DrawBarChart(config: Config,  formatBarLabel: ((Int, Float, ChartPoi
                                 detectTapGestures(
                                     onTap = {
                                         val lambda = config.onPlotAreaTap
-                                        lambda(chartPoint)
+                                        lambda(chartPoint, it)
                                     }
                                 )
                             }
                         }
-
-                        val barLabelText  = if( formatBarLabel == null ) "" else formatBarLabel(index, chartPoint.yValue, chartPoint)
-
-                        val barLabelMeasure = rememberTextMeasurer().measure(
-                            barLabelText,
-                            config.bottomAxisConfig.labelStyle,
-                            config.bottomAxisConfig.labelOverflow,
-                            maxLines = 1
-                        )
 
                         // create a canvas to draw the bar
                         Canvas(
@@ -673,14 +666,6 @@ private fun DrawBarChart(config: Config,  formatBarLabel: ((Int, Float, ChartPoi
                                             style = Stroke(width = config.leftAxisConfig.lineStrokeWidth.value)
                                         )
 
-                                        if(formatBarLabel !=null)
-                                        {
-                                            drawText(
-                                                textLayoutResult = barLabelMeasure,
-                                                topLeft = Offset( width/2, y)
-                                            )
-                                        }
-
                                         if (config.leftAxisConfig.showFillColour) {
                                             drawPath(
                                                 path = path,
@@ -690,6 +675,24 @@ private fun DrawBarChart(config: Config,  formatBarLabel: ((Int, Float, ChartPoi
                                             )
                                         }
 
+                                        if (formatPointLabel != null) {
+                                                val text = formatPointLabel(index,chartPoint)
+                                                val measure = textMeasurer.measure(
+                                                    text,
+                                                    config.leftAxisConfig.pointLabelStyle,
+                                                    config.leftAxisConfig.labelOverflow,
+                                                    maxLines = 1
+                                                )
+
+                                                val x = (barWidth - measure.size.width)/2f
+                                                val yText = y - ((measure.size.height)*1.5f)
+
+
+                                                drawText(
+                                                    textLayoutResult = measure,
+                                                    topLeft = Offset(x,yText)
+                                                )
+                                            }
                                     }
                                 }
                         ) {
@@ -708,9 +711,13 @@ private fun DrawBarChart(config: Config,  formatBarLabel: ((Int, Float, ChartPoi
 }
 
 @Composable
-private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Unit)? = null) {
+private fun DrawLineChart(config: AxisConfig,
+                          onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
+                          formatPointLabel: ((Int, ChartPoint) -> String)?
+) {
 
     val pointsSortedByX = config.dataPoints.sortedBy { it.xValue }
+    val textMeasurer = rememberTextMeasurer()
 
     pointsSortedByX.let { points ->
 
@@ -730,7 +737,7 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                     modifier = Modifier
                         .fillMaxSize()
                         .drawWithCache {
-                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config)
+                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config, textMeasurer, formatPointLabel)
                         }
                         .pointerInput(key1 = Unit) {
                             detectTapGestures(
@@ -741,7 +748,7 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                                     if (pointIndex > points.size - 1) pointIndex = points.size - 1
                                     val point = points[pointIndex]
                                     val lambda = onPlotAreaTap
-                                    lambda(point)
+                                    lambda(point, it)
                                 }
                             )
                         }
@@ -753,7 +760,7 @@ private fun DrawLineChart(config: AxisConfig, onPlotAreaTap: ((ChartPoint) -> Un
                     modifier = Modifier
                         .fillMaxSize()
                         .drawWithCache {
-                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config)
+                            drawSpline(points, width, xMin, xMax, height, yMin, yMax, config, textMeasurer, formatPointLabel = formatPointLabel)
                         }
                 ) {
 
@@ -771,8 +778,10 @@ private fun CacheDrawScope.drawSpline(
     height: Float,
     yMin: Float,
     yMax: Float,
-    config: AxisConfig
-): DrawResult {
+    config: AxisConfig,
+    textMeasurer: TextMeasurer,
+    formatPointLabel: ((Int,ChartPoint) -> String)?
+    ): DrawResult {
     val linePoints = ArrayList<PointF>()
     for (point in points) {
         // actual point add to path
@@ -843,6 +852,7 @@ private fun CacheDrawScope.drawSpline(
     }
 
 
+
     return onDrawBehind {
 
         drawPath(
@@ -892,6 +902,29 @@ private fun CacheDrawScope.drawSpline(
                         )
                 }
             }
+        }
+
+        if (formatPointLabel != null) {
+
+                for (i in 1..points.size) {
+                    val point = points[i - 1]
+                    val text = formatPointLabel(i,point)
+                    val measure = textMeasurer.measure(
+                        text,
+                        config.pointLabelStyle,
+                        config.labelOverflow,
+                        maxLines = 1
+                    )
+
+                    val x = (width * (point.xValue - xMin) / (xMax - xMin)) - (measure.size.width/2)
+                    val y = height - (height * (point.yValue - yMin) / (yMax - yMin))  - ((measure.size.height)*1.5f)
+
+
+                    drawText(
+                        textLayoutResult = measure,
+                        topLeft = Offset(x,y)
+                    )
+                }
         }
 
     }
@@ -1026,6 +1059,17 @@ data class AxisConfig(
         background = Color.Transparent,
     ),
 
+    val formatPointLabel: ((Int,ChartPoint) -> String)? = null,
+
+    /**
+     * Defines the style for point labels when formatPointLabel is defined
+     */
+    val pointLabelStyle: TextStyle = TextStyle(
+        fontSize = 12.sp,
+        textAlign = TextAlign.Center,
+        background = Color.Transparent,
+    ),
+
     val labelOverflow: TextOverflow = TextOverflow.Ellipsis,
     val labelMaxLines: Int = 1,
 )
@@ -1062,7 +1106,7 @@ private data class Config(
     val leftAxisConfig: AxisConfig? = null,
     val rightAxisConfig: AxisConfig? = null,
     val bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
-    val onPlotAreaTap: ((ChartPoint) -> Unit)? = null,
+    val onPlotAreaTap: ((ChartPoint, Offset) -> Unit)? = null,
 )
 
 /**

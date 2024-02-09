@@ -62,7 +62,8 @@ class DataProvider {
 
         // generate some data
         val randomX = List(n) { Random.nextLong(then, now) } // milliseconds on x axis
-        val randomY = List(n) { Random.nextDouble(100.0, 125.0) }
+        val randomY = listOf (  119.0f, 120f, 120.3f, 120.4f, 120.6f, 120.8f, 119.9f, 119.8f, 119.8f, 119.7f,
+            119.6f, 120f, 120.3f, 120.4f, 120.6f, 120.8f, 119.9f, 119.8f, 119.8f, 119.7f, 119.7f )
 
         // create the chart points
         val points = ArrayList<ChartPoint>(n)
@@ -70,7 +71,7 @@ class DataProvider {
             points.add(
                 i, ChartPoint(
                     xValue = randomX[i].toFloat(),
-                    yValue = randomY[i].toFloat()
+                    yValue = randomY[i]
                 )
             )
         }
