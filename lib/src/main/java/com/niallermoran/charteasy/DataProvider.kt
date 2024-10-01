@@ -14,7 +14,17 @@ class DataProvider {
 
     val points: List<ChartPoint>
         get() {
-            return generateRandomIntegers()
+
+            return listOf(
+                ChartPoint(1.1f, 40f, label = "Dur.: 1.1 - 50 bpm"),
+                ChartPoint(3.2f, 10f, label = "Dur.: 3.2 - 10 bpm"),
+                ChartPoint(3.3f, 30.8f, label = "Dur.: 3.3 - 31 bpm"),
+                ChartPoint(3.4f, 2f, label = "Dur.: 3.4 - 2 bpm"),
+                ChartPoint(1.6f, 26f, label = "Dur.: 1.6 - 26 bpm"),
+                ChartPoint(9f, 32.5f, label = "Dur.: 9 - 33 bpm"),
+                ChartPoint(2.3f, 7.89f, label = "Dur.: 2.3 - 8 bpm")
+            )
+            //return generateRandomIntegers()
         }
 
     val piePoints: List<PiePoint>

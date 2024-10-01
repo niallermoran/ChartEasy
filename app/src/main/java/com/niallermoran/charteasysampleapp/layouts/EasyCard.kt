@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
@@ -25,7 +26,8 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun EasyCard(
-    title: String = "Chart title", onCardTap: (() -> Unit)? = null,
+    title: String = "Chart title",
+    onCardTap: (() -> Unit)? = null,
     content: @Composable RowScope.() -> Unit
 ) {
 
@@ -35,8 +37,7 @@ fun EasyCard(
             .clickable(onClick = {
                 if (onCardTap != null)
                     onCardTap()
-            })
-            .height(300.dp),
+            }),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
         )

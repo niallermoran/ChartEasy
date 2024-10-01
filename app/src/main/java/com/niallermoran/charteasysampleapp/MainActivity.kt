@@ -19,19 +19,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.niallermoran.charteasy.AxisConfig
 import com.niallermoran.charteasy.AxisType
 import com.niallermoran.charteasy.BottomAxisConfig
 import com.niallermoran.charteasy.Chart
+import com.niallermoran.charteasy.ChartConfig
 import com.niallermoran.charteasy.DataProvider
-import com.niallermoran.charteasy.MixedChart
+
 import com.niallermoran.charteasy.PieChart
 import com.niallermoran.charteasy.PieChartConfig
 import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
@@ -94,10 +99,46 @@ fun SamplesCharts() {
 
     val settings = AppSettings(smoothLineCharts = smoothLineCharts, fillCharts = fillCharts)
 
+    Box(modifier=Modifier.padding(12.dp).height(300.dp))
+    {
+        Chart(
+            chartConfig = ChartConfig(
+                barChartFraction = 0.5f,
+            ),
+            leftAxisConfig = AxisConfig(
+                type = AxisType.Line,
+                dataPoints = points,
+                showFillColour = settings.fillCharts,
+                display = showAxes,
+                displayLabels = showLabels,
+                displayTicks = showTicks,
+                lineStrokeWidth = lineThickness.dp,
+                minY = 0f,
+                maxY = 60f,
+                lineColor = Color.Red,
+                circleColor = Color.Blue,
+                axisColor = Color.LightGray,
+                labelStyle = TextStyle(color=Color.Green),
+                tickColor = Color.Cyan
+            ),
+            bottomAxisConfig = BottomAxisConfig(
+
+                axisColor = Color.LightGray,
+                labelStyle = TextStyle(color=Color.Magenta),
+
+                displayLabels = showLabels,
+                displayTicks = showTicks,
+                tickColor = Color.Cyan
+                 //maxNumberOfLabelsToDisplay = 2
+            )
+        )
+    }
+
+    return
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp)
             .verticalScroll(rememberScrollState())
             .padding(6.dp)
     )
@@ -164,32 +205,55 @@ fun SamplesCharts() {
 
         EasyCard(title = "Minimal Configuration with Random Data", onCardTap = {displayText = "minimal card tapped"}) {
 
+            val lineColor = Color.Magenta
+            val x = 0f
+            val height = 0f
 
-            Chart(
-                modifier = Modifier.padding(12.dp),
-                leftAxisConfig = AxisConfig(
-                    dataPoints = points,
-                    showFillColour = settings.fillCharts,
-                    display = showAxes,
-                    displayLabels = showLabels,
-                    displayTicks = showTicks,
-                    lineStrokeWidth = lineThickness.dp
-                ),
-                bottomAxisConfig = BottomAxisConfig(
-                    display = showAxes,
-                    displayLabels = showLabels,
-                    displayTicks = showTicks
-                ),
-              /* onPlotAreaTap = {
+            Box {
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(2f)
+                        .drawWithCache {
+                            val path = Path()
+                            path.moveTo(x, 0f)
+                            path.lineTo(x, height)
+                            onDrawBehind {
+                                drawPath(
+                                    path = path,
+                                    color = lineColor,
+                                    style = Stroke(width = 2f)
+                                )
+                            }
+                        }
 
-                    displayText = "minimal chart tapped"
-                }*/
-            )
+                )
+
+                Chart(
+
+                    leftAxisConfig = AxisConfig(
+                        type = AxisType.Bar,
+                        dataPoints = points,
+                        showFillColour = settings.fillCharts,
+                        display = showAxes,
+                        displayLabels = showLabels,
+                        displayTicks = showTicks,
+                        lineStrokeWidth = lineThickness.dp
+                    ),
+                    bottomAxisConfig = BottomAxisConfig(
+                        display = showAxes,
+                        displayLabels = showLabels,
+                        displayTicks = showTicks,
+                     //  maxNumberOfLabelsToDisplay = 3
+                    ),
+
+                )
+            }
         }
 
         EasyCard(title = "Formatted with Random Data") {
             Chart(
-                modifier = Modifier.padding(12.dp),
+
                 leftAxisConfig = AxisConfig(
                     dataPoints = points,
                     tickColor = Color.Gray,
@@ -229,7 +293,7 @@ fun SamplesCharts() {
              * For the time series chart we are using a formatter to display the date in the format we want on the bottom axis
              */
             Chart(
-                modifier = Modifier.padding(12.dp), // use some padding so last x-axis label is not clipped
+
                 leftAxisConfig = AxisConfig(
                     dataPoints = timeSeries1,
                     tickColor = Color.Gray,
@@ -253,7 +317,7 @@ fun SamplesCharts() {
                     displayTicks = showTicks,
                     maxNumberOfLabelsToDisplay = 5
                 ),
-                formatBottomAxisLabel = { _, x, _ ->
+                formatBottomAxisLabel = { x ->
                     // x represents an epoch in milliseconds
                     val date = Date(x.toLong())
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
@@ -268,7 +332,7 @@ fun SamplesCharts() {
              * Labels will be created for every point and the chart defaults to a line chart
              */
             Chart(
-                modifier = Modifier.padding(12.dp), // use some padding so last x-axis label is not clipped
+
                 leftAxisConfig = AxisConfig(
                     dataPoints = timeSeries1,
                     tickColor = Color.Gray,
@@ -298,7 +362,7 @@ fun SamplesCharts() {
                     displayTicks = showTicks,
                     maxNumberOfLabelsToDisplay = 5
                 ),
-                formatBottomAxisLabel = { _, x, _ ->
+                formatBottomAxisLabel = { x ->
                     // x represents an epoch in milliseconds
                     val date = Date(x.toLong())
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
@@ -312,8 +376,10 @@ fun SamplesCharts() {
              * Creates a chart with minimum configuration.
              * Labels will be created for every point and the chart defaults to a line chart
              */
-            MixedChart(
-                modifier = Modifier.padding(12.dp), // use some padding so last x-axis label is not clipped
+       /*     MixedChart(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .height(300.dp), // use some padding so last x-axis label is not clipped
                 leftAxisConfig = AxisConfig(
                     dataPoints = timeSeries1,
                     tickColor = Color.Gray,
@@ -370,13 +436,15 @@ fun SamplesCharts() {
                     val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
                     dateFormatter.format(date)
                 }
-            )
+            )*/
         }
 
         EasyCard(title = "Pie Chart with Custom Labels and Random Data") {
 
             PieChart(
-                modifier = Modifier.padding(12.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .height(300.dp),
                 config = PieChartConfig(
                     dataPoints = piePoints,
                     chartHeight = 300.dp,
