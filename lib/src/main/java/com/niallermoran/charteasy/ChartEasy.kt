@@ -78,16 +78,13 @@ fun Chart(
             )
 
 
-            Log.d("LeftAxisOutsideCanvas", dimensions.chart.leftAxisArea.size.width.toString())
-
-
             // left axis
-            DrawLeftAxisArea( density = density, config = config, dimensions = dimensions)
+            DrawLeftAxisArea(config = config, dimensions = dimensions)
 
             // bottom axis
             //DrawBox(topLeftOffset = dimensions.chart.bottomAxisArea.offset, size = dimensions.chart.bottomAxisArea.size, color = Color.Red)
 
-      //      DrawBottomAxisArea(config = config, dimensions = dimensions)
+            DrawBottomAxisArea(config = config, dimensions = dimensions)
 
             // plot area
             //DrawBox(topLeftOffset = dimensions.chart.plotArea.offset, size = dimensions.chart.plotArea.size, color = Color.Transparent)
@@ -112,121 +109,120 @@ fun Chart(
 
 
 @Composable
-private fun DrawBottomAxisArea( config:Config, dimensions: Dimensions) {
+private fun DrawBottomAxisArea(config: Config, dimensions: Dimensions) {
 
     val topLeftOffset = dimensions.chart.bottomAxisArea.offset
-    val size = dimensions.chart.bottomAxisArea.size
-    val density = LocalDensity.current
 
     // all calcs are done in Dp as Float, make sure to convert to Pixels for drawing
-    with(density) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-
-            // draw axis line
-            drawLine(
-                color = config.bottomAxisConfig.axisColor,
-                start = Offset(topLeftOffset.x, y = topLeftOffset.y),
-                end = Offset(topLeftOffset.x + size.width, y = topLeftOffset.y)
+    Canvas(
+        modifier = Modifier
+            .size(
+                dimensions.chart.bottomAxisArea.size.width,
+                dimensions.chart.bottomAxisArea.size.height
             )
+            .offset(x = topLeftOffset.left, topLeftOffset.top)
+            .background(Color.Magenta)
+    ) {
 
-            // draw ticks and labels
-            dimensions.bottomAxisLabels.forEach { label ->
+        val widthPx = size.width
+        val heightPx = size.height
+
+        // draw axis line
+        drawLine(
+            color = config.bottomAxisConfig.axisColor,
+            start = Offset(0f, 0f),
+            end = Offset(widthPx, 0f)
+        )
+
+        // draw ticks and labels
+
+        // draw ticks and labels
+            val xPXBetweenTicks = widthPx / (dimensions.bottomAxisLabels.size - 1)
+
+            dimensions.bottomAxisLabels.forEachIndexed { index, label ->
+
+                val pxTick = xPXBetweenTicks * index
+
                 drawLine(
                     color = config.bottomAxisConfig.tickColor,
-                    start = label.tickStartOffset,
+                    start = Offset(pxTick, 0f),
                     end = Offset(
-                        x = label.tickStartOffset.x,
-                        y = label.tickStartOffset.y + config.bottomAxisConfig.tickLength.toPx()
+                        x = pxTick,
+                        y = config.bottomAxisConfig.tickLength.toPx()
                     )
                 )
-
                 drawText(
                     textLayoutResult = label.text,
-                    topLeft = label.labelTopLeftOffset
+                    topLeft = Offset(
+                        x = pxTick - (label.text.size.width / 2) ,
+                        y = config.bottomAxisConfig.tickLength.toPx() + config.bottomAxisConfig.labelPadding.calculateTopPadding().toPx()
+                    )
                 )
             }
 
-        }
+
+
+
     }
 }
 
+
 @Composable
-private fun DrawLeftAxisArea( density:Density, config:Config, dimensions: Dimensions) {
+private fun DrawLeftAxisArea(config: Config, dimensions: Dimensions) {
 
-    val topLeftOffset = dimensions.chart.leftAxisArea.offset
-    val textMeasurer = rememberTextMeasurer()
+    val topLeftOffset = dimensions.chart.leftAxisArea.topLeftOffset
 
-    Canvas(modifier = Modifier
-        .size(
-            dimensions.chart.leftAxisArea.size.width.dp,
-            dimensions.chart.leftAxisArea.size.height.dp
+    Canvas(
+        modifier = Modifier
+            .size(
+                dimensions.chart.leftAxisArea.size.width,
+                dimensions.chart.leftAxisArea.size.height
+            )
+            .offset(x = topLeftOffset.left, topLeftOffset.top)
+            .background(Color.Cyan)
+    ) {
+
+        val widthPx = size.width
+        val heightPx = size.height
+
+        // draw axis line
+        drawLine(
+            color = config.leftAxisConfig.axisColor,
+            start = Offset(widthPx, 0f),
+            end = Offset(widthPx, heightPx)
         )
-        .offset(x = topLeftOffset.x.dp, topLeftOffset.y.dp)
-        .background(Color.Cyan) ) {
 
-            // draw axis line
+        // draw ticks and labels
+        val yPxBetweenTicks = heightPx / (dimensions.leftAxisLabels.size - 1)
+
+        dimensions.leftAxisLabels.forEachIndexed { index, leftAxisLabel ->
+
+            val pxTick = size.height - (yPxBetweenTicks * (index))
             drawLine(
-                color = config.leftAxisConfig.axisColor,
-                start = Offset(size.width, 0f),
-                end = Offset(size.width , size.height )
+                color = config.leftAxisConfig.tickColor,
+                start = Offset(widthPx, pxTick ),
+                end = Offset(
+                    x = widthPx - config.leftAxisConfig.tickLength.toPx(),
+                    y = pxTick
+                )
             )
 
-            // draw ticks and labels
-            val ySpaceBetweenTicks = size.height / ( dimensions.leftAxisLabels.size - 1)
-
-            dimensions.leftAxisLabels.forEachIndexed { index, leftAxisLabel ->
-
-                val yTick = size.height - ( ySpaceBetweenTicks * (index-1))
-                drawLine(
-                    color = config.leftAxisConfig.tickColor,
-                    start = Offset(size.width,yTick),
-                    end = Offset(
-                        x = size.width - config.leftAxisConfig.tickLength.toPx(),
-                        y = yTick
-                    )
+            drawText(
+                textLayoutResult = leftAxisLabel.text,
+                topLeft = Offset(
+                    x = widthPx
+                            - config.leftAxisConfig.tickLength.toPx() - leftAxisLabel.text.size.width - config.leftAxisConfig.labelPadding.calculateRightPadding(
+                        LayoutDirection.Ltr
+                    ).toPx(),
+                    y = pxTick - (leftAxisLabel.text.size.height / 2)
                 )
-
-                val label = textMeasurer.measure(
-                    "40.32",
-                    style = config.leftAxisConfig.labelStyle,
-                    density = density
-                )
-
-                Log.d("TextWidthPixel", leftAxisLabel.text.size.width.toDp().toPx().toString())
-                Log.d("TextWidthDp", leftAxisLabel.text.size.width.toDp().toString())
-
-                drawText(
-                    textLayoutResult = label,
-                    topLeft = Offset(
-                        x = size.width - config.leftAxisConfig.tickLength.toPx() - leftAxisLabel.text.size.width.toDp().toPx() - config.leftAxisConfig.labelPadding.calculateRightPadding(LayoutDirection.Ltr).toPx(),
-                        y = yTick - (leftAxisLabel.text.size.height/2)
-                    )
-                )
-            }
-        }
-
-}
-
-@Composable
-private fun DrawBox(topLeftOffset: Offset, size: Size, color: Color) {
-
-    Log.d("LeftAxis", size.width.toString())
-
-    with(LocalDensity.current) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-
-            Log.d("LeftAxisPixel", size.width.dp.toPx().toString())
-
-            val path = Path()
-            path.moveTo(topLeftOffset.x.dp.toPx(), topLeftOffset.y.dp.toPx())
-            path.lineTo(topLeftOffset.x.dp.toPx() + size.width.dp.toPx(), y = topLeftOffset.y.dp.toPx())
-            path.lineTo(topLeftOffset.x.dp.toPx() + size.width.dp.toPx(), y = topLeftOffset.y.dp.toPx() + size.height.dp.toPx())
-            path.lineTo(topLeftOffset.x.dp.toPx(), y = topLeftOffset.y.dp.toPx() + size.height.dp.toPx())
-            path.lineTo(topLeftOffset.x.dp.toPx(), topLeftOffset.y)
-            drawPath(path, color)
+            )
         }
     }
+
+
 }
+
 
 /*
 

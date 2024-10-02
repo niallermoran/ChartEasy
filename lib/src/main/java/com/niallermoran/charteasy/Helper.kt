@@ -36,7 +36,7 @@ fun calculateDimensions(
     val dimensions = Dimensions()
     with(density) {
         dimensions.chart.chartSize =
-            Size(width = availableWidth.toPx(), height = availableHeight.toPx())
+            SizeDp(width = availableWidth, height = availableHeight)
 
         // calculate data specific dimensions
         dimensions.dataValues.points =
@@ -99,21 +99,8 @@ private fun calculateLabels(
                 "%.2f",
                 yValue
             ) else leftAxisFormatter(yValue)
-            val textMeasure =
-                textMeasurer.measure(labelText, style = config.leftAxisConfig.labelStyle)
-            val label = LeftAxisLabel(
-                text = textMeasure,
-                tickStartOffset = OffsetDp(
-                     dimensions.chart.leftAxisArea.size.width,
-                     dimensions.chart.leftAxisArea.size.height - ( dpBetweenTicks * (i - 1) )
-                ),
-                labelTopLeftOffset = OffsetDp(
-                    dimensions.chart.leftAxisArea.size.width - config.leftAxisConfig.tickLength - config.leftAxisConfig.labelPadding.calculateRightPadding(
-                        LayoutDirection.Ltr
-                    ) - textMeasure.size.width.dp,
-                    dimensions.chart.leftAxisArea.size.height - ( dpBetweenTicks * (i - 1) ) - (textMeasure.size.height.dp / 2)
-                )
-            )
+
+            val label = LeftAxisLabel(text = textMeasurer.measure(labelText, style = config.leftAxisConfig.labelStyle))
             dimensions.leftAxisLabels.add(label)
         }
     }
@@ -140,17 +127,7 @@ private fun calculateLabels(
             ) else bottomAxisFormatter(xValue)
             val textMeasure =
                 textMeasurer.measure(labelText, style = config.bottomAxisConfig.labelStyle)
-            val label = BottomAxisLabel(
-                text = textMeasure,
-                tickStartOffset = OffsetDp(
-                    dimensions.chart.bottomAxisArea.offset.left + ( dpBetweenTicks.times (i - 1)),
-                    dimensions.chart.bottomAxisArea.offset.left
-                ),
-                labelTopLeftOffset = OffsetDp(
-                     dimensions.chart.bottomAxisArea.offset.left + ( dpBetweenTicks * (i - 1) ) - textMeasure.size.width.dp / 2,
-                     dimensions.chart.bottomAxisArea.offset.top + config.bottomAxisConfig.tickLength + config.bottomAxisConfig.labelPadding.calculateTopPadding()
-                )
-            )
+            val label = BottomAxisLabel(text = textMeasure)
             dimensions.bottomAxisLabels.add(label)
         }
     }
@@ -186,14 +163,15 @@ private fun calculateAxisDimensions(
     }
 
     if (config.bottomAxisConfig.displayLabels) {
-        bottomAxisHeight += textMeasurer.measure(
-            text = xText,
-            style = config.bottomAxisConfig.labelStyle,
-            maxLines = config.bottomAxisConfig.labelMaxLines
-        ).size.height
+        // text measureres return pixels
+        with(density) {
+            bottomAxisHeight += textMeasurer.measure(
+                text = xText,
+                style = config.bottomAxisConfig.labelStyle,
+                maxLines = config.bottomAxisConfig.labelMaxLines
+            ).size.height.toDp().value
+        }
     }
-
-    Log.d("BottomAxisHeightDPFloat", bottomAxisHeight.toString())
 
     // calculate the left axis width
     var leftAxisWidth =
@@ -201,57 +179,53 @@ private fun calculateAxisDimensions(
             LayoutDirection.Ltr
         )
 
-    Log.d("LeftAxisWidth", leftAxisWidth.toString())
+    Log.d("CalculatingLabelWidthBoxWidth", leftAxisWidth.toString() )
 
     if (config.leftAxisConfig.displayLabels) {
-        leftAxisWidth += textMeasurer.measure(
-            yText,
-            style = config.leftAxisConfig.labelStyle,
-            maxLines = config.leftAxisConfig.labelMaxLines
-        ).size.width.dp
+        with(density) {
+            val labelWidth = textMeasurer.measure(
+                yText,
+                style = config.leftAxisConfig.labelStyle,
+                maxLines = config.leftAxisConfig.labelMaxLines
+            ).size.width.toDp()
+
+            Log.d("CalculatingLabelWidth", labelWidth.toString())
+            leftAxisWidth += labelWidth
+        }
     }
-
-    Log.d("LeftAxisWidth", leftAxisWidth.toString())
-
 
     if (config.leftAxisConfig.displayTicks) {
         leftAxisWidth += config.leftAxisConfig.tickLength
     }
 
+    Log.d("CalculatingLabelWidthBoxWidth", leftAxisWidth.toString())
+    Log.d("CalculatingLabelWidthTickLength", config.leftAxisConfig.tickLength.toString())
 
-    Log.d("LeftAxisWidth", leftAxisWidth.toString())
-
-    with(density)
-    {
-        dimensions.chart.bottomAxisArea = BottomAxisArea(
-            size = SizeDp(
-                width = dimensions.chart.chartSize.width.toDp() - leftAxisWidth.value.toDp(),
-                height = bottomAxisHeight.t
-            ),
-            offset = Offset(
-                x = leftAxisWidth.value.toDp().toPx(),
-                y = dimensions.chart.chartSize.height.toDp().toPx() - bottomAxisHeight.toDp().toPx()
-            )
+    dimensions.chart.bottomAxisArea = BottomAxisArea(
+        size = SizeDp(
+            width = dimensions.chart.chartSize.width - leftAxisWidth.value.dp,
+            height = bottomAxisHeight.dp
+        ),
+        offset = OffsetDp(
+            leftAxisWidth.value.dp,
+            dimensions.chart.chartSize.height - bottomAxisHeight.dp
         )
+    )
 
-        dimensions.chart.leftAxisArea = LeftAxisArea(
-            size = Size(
-                width = leftAxisWidth.value,
-                height = dimensions.chart.chartSize.height - bottomAxisHeight
-            ),
-            offset = Offset(
-                x = 0f,
-                y = 0f
-            )
-        )
-    }
+    dimensions.chart.leftAxisArea = LeftAxisArea(
+        size = SizeDp(
+            width = leftAxisWidth.value.dp,
+            height = dimensions.chart.chartSize.height - bottomAxisHeight.dp
+        ),
+        topLeftOffset = OffsetDp(0.dp, 0.dp)
+    )
 
-    val plotAreaOuterWidth = dimensions.chart.chartSize.width - leftAxisWidth.value
-    val plotAreaOuterHeight = dimensions.chart.chartSize.height - bottomAxisHeight
+    val plotAreaOuterWidth = dimensions.chart.chartSize.width - leftAxisWidth.value.dp
+    val plotAreaOuterHeight = dimensions.chart.chartSize.height - bottomAxisHeight.dp
 
     // calculate padding for plot area
     var padding = config.chartConfig.plotAreaPadding ?: PaddingValues(0.dp)
-    var barWidth = 0f
+    var barWidth = 0.dp
 
     // if it's bar chart and no padding is set, calculate it
     if (config.leftAxisConfig.type == AxisType.Bar) {
@@ -264,8 +238,8 @@ private fun calculateAxisDimensions(
             val divisor = numberOfBars + ((numberOfBars.toFloat() + 1) * barWidthFraction)
             barWidth = plotAreaOuterWidth / divisor
             padding = PaddingValues(
-                start = (barWidth * barWidthFraction).dp,
-                end = (barWidth * barWidthFraction).dp
+                start = (barWidth * barWidthFraction),
+                end = (barWidth * barWidthFraction)
             )
         }
 
@@ -275,7 +249,7 @@ private fun calculateAxisDimensions(
             barWidth =
                 (plotAreaOuterWidth - config.chartConfig.plotAreaPadding.calculateLeftPadding(
                     LayoutDirection.Ltr
-                ).value - config.chartConfig.plotAreaPadding.calculateRightPadding(LayoutDirection.Ltr).value) / divisor
+                ).value.dp - config.chartConfig.plotAreaPadding.calculateRightPadding(LayoutDirection.Ltr).value.dp) / divisor
             padding = PaddingValues(
                 start = config.chartConfig.plotAreaPadding.calculateLeftPadding(LayoutDirection.Ltr),
                 end = config.chartConfig.plotAreaPadding.calculateRightPadding(LayoutDirection.Ltr)
@@ -285,18 +259,18 @@ private fun calculateAxisDimensions(
     }
 
     dimensions.chart.plotArea = PlotArea(
-        size = Size(
+        size = SizeDp(
             width = plotAreaOuterWidth,
             height = plotAreaOuterHeight
         ),
-        offset = Offset(
-            x = leftAxisWidth.value,
-            y = 0f
+        offset = OffsetDp(
+            leftAxisWidth,
+            0.dp
         ),
         padding = padding,
-        innerOffset = Offset(
-            x = leftAxisWidth.value + padding.calculateLeftPadding(LayoutDirection.Ltr).value,
-            y = padding.calculateTopPadding().value
+        innerOffset = OffsetDp(
+            leftAxisWidth + padding.calculateLeftPadding(LayoutDirection.Ltr).value.dp,
+            padding.calculateTopPadding().value.dp
         ),
         barWidth = barWidth
     )

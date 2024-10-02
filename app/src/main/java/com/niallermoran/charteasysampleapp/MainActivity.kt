@@ -103,7 +103,7 @@ fun SamplesCharts() {
     Box(modifier = Modifier.padding(12.dp)) {
         Chart(
             chartConfig = ChartConfig(
-                plotAreaPadding = PaddingValues(start = 10.dp, end = 10.dp)
+                plotAreaPadding = PaddingValues(start = 0.dp, end = 0.dp)
             ),
             leftAxisConfig = AxisConfig(
                 type = AxisType.Bar,
@@ -115,13 +115,17 @@ fun SamplesCharts() {
                 lineStrokeWidth = lineThickness.dp,
                 minY = 0f,
                 labelStyle = TextStyle( fontSize = 14.sp ),
-                labelPadding = PaddingValues(end=12.dp)
+                labelPadding = PaddingValues(end=4.dp, start = 4.dp),
+                tickLength = 10.dp
+                //maxNumberOfLabelsToDisplay = 4
             ),
             bottomAxisConfig = BottomAxisConfig(
                 display = showAxes,
                 displayLabels = showLabels,
                 displayTicks = showTicks,
-                //  maxNumberOfLabelsToDisplay = 3
+                  maxNumberOfLabelsToDisplay = 3,
+                labelPadding = PaddingValues(10.dp),
+                tickLength = 10.dp
             ),
 
             )

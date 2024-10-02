@@ -18,10 +18,11 @@ data class LeftAxisArea( var topLeftOffset: OffsetDp = OffsetDp(), var size: Siz
 
 data class BottomAxisArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp() )
 data class RightAxisArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp())
-data class PlotArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp(), var padding:PaddingValues = PaddingValues(0.dp), var innerOffset: OffsetDp = OffsetDp(), var barWidth: Float = 0f)
+data class PlotArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp(), var padding:PaddingValues = PaddingValues(0.dp),
+                    var innerOffset: OffsetDp = OffsetDp(), var barWidth: Dp = 0.dp)
 
-data class LeftAxisLabel( val text: TextLayoutResult, val tickStartOffset: OffsetDp, val labelTopLeftOffset:OffsetDp=OffsetDp(0.dp,0.dp))
-data class BottomAxisLabel( val text: TextLayoutResult, val tickStartOffset: OffsetDp, val labelTopLeftOffset: OffsetDp = OffsetDp(0.dp,0.dp))
+data class LeftAxisLabel( val text: TextLayoutResult )
+data class BottomAxisLabel( val text: TextLayoutResult )
 
 
 data class OffsetDp( val left:Dp = 0.dp, val top: Dp = 0.dp )
@@ -246,7 +247,7 @@ data class ChartDimensions(
     var bottomAxisArea:BottomAxisArea= BottomAxisArea(),
     var rightAxisArea:RightAxisArea = RightAxisArea(),
     var plotArea:PlotArea = PlotArea(),
-    var chartSize: Size = Size(0f, 0f)
+    var chartSize: SizeDp = SizeDp(0.dp, 0.dp)
 )
 
 data class DataValues(var xMin: Float = 0f, var yMin:Float = 0f, var xMax: Float = 0f, var yMax:Float = 0f, var points: List<ChartPoint> = ArrayList() )
