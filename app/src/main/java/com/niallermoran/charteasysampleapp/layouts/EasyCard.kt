@@ -34,10 +34,7 @@ fun EasyCard(
     ElevatedCard(
         modifier = Modifier
             .padding(6.dp)
-            .clickable(onClick = {
-                if (onCardTap != null)
-                    onCardTap()
-            }),
+            .height(300.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
         )
@@ -56,7 +53,7 @@ fun EasyCard(
                 .background(Color.LightGray)
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(12.dp)) {
             content.invoke(this)
         }
     }

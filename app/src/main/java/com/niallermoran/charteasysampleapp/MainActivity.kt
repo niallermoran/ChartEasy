@@ -99,14 +99,14 @@ fun SamplesCharts() {
 
     val settings = AppSettings(smoothLineCharts = smoothLineCharts, fillCharts = fillCharts)
 
-    Box(modifier=Modifier.padding(12.dp).height(300.dp))
-    {
+
+    Box(modifier = Modifier.padding(12.dp)) {
         Chart(
             chartConfig = ChartConfig(
-                barChartFraction = 0.5f,
+                plotAreaPadding = PaddingValues(start = 10.dp, end = 10.dp)
             ),
             leftAxisConfig = AxisConfig(
-                type = AxisType.Line,
+                type = AxisType.Bar,
                 dataPoints = points,
                 showFillColour = settings.fillCharts,
                 display = showAxes,
@@ -114,28 +114,20 @@ fun SamplesCharts() {
                 displayTicks = showTicks,
                 lineStrokeWidth = lineThickness.dp,
                 minY = 0f,
-                maxY = 60f,
-                lineColor = Color.Red,
-                circleColor = Color.Blue,
-                axisColor = Color.LightGray,
-                labelStyle = TextStyle(color=Color.Green),
-                tickColor = Color.Cyan
+                labelStyle = TextStyle( fontSize = 14.sp ),
+                labelPadding = PaddingValues(end=12.dp)
             ),
             bottomAxisConfig = BottomAxisConfig(
-
-                axisColor = Color.LightGray,
-                labelStyle = TextStyle(color=Color.Magenta),
-
+                display = showAxes,
                 displayLabels = showLabels,
                 displayTicks = showTicks,
-                tickColor = Color.Cyan
-                 //maxNumberOfLabelsToDisplay = 2
+                //  maxNumberOfLabelsToDisplay = 3
+            ),
+
             )
-        )
     }
 
     return
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -203,34 +195,18 @@ fun SamplesCharts() {
             }
         }
 
-        EasyCard(title = "Minimal Configuration with Random Data", onCardTap = {displayText = "minimal card tapped"}) {
+        EasyCard(title = "Minimal Configuration") {
 
             val lineColor = Color.Magenta
             val x = 0f
             val height = 0f
 
             Box {
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .zIndex(2f)
-                        .drawWithCache {
-                            val path = Path()
-                            path.moveTo(x, 0f)
-                            path.lineTo(x, height)
-                            onDrawBehind {
-                                drawPath(
-                                    path = path,
-                                    color = lineColor,
-                                    style = Stroke(width = 2f)
-                                )
-                            }
-                        }
-
-                )
 
                 Chart(
-
+                    chartConfig = ChartConfig(
+                        plotAreaPadding = PaddingValues(start = 10.dp, end=10.dp)
+                    ),
                     leftAxisConfig = AxisConfig(
                         type = AxisType.Bar,
                         dataPoints = points,
@@ -238,7 +214,8 @@ fun SamplesCharts() {
                         display = showAxes,
                         displayLabels = showLabels,
                         displayTicks = showTicks,
-                        lineStrokeWidth = lineThickness.dp
+                        lineStrokeWidth = lineThickness.dp,
+                        minY = 0f
                     ),
                     bottomAxisConfig = BottomAxisConfig(
                         display = showAxes,
