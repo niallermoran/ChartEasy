@@ -16,12 +16,12 @@ class DataProvider {
         get() {
 
             return listOf(
-                ChartPoint(1.1f, 40f, label = "Dur.: 1.1 - 50 bpm"),
-                ChartPoint(3.2f, 10f, label = "Dur.: 3.2 - 10 bpm"),
-                ChartPoint(3.3f, 30.8f, label = "Dur.: 3.3 - 31 bpm"),
-                ChartPoint(3.4f, 12f, label = "Dur.: 3.4 - 2 bpm"),
-                ChartPoint(1.6f, 26f, label = "Dur.: 1.6 - 26 bpm"),
-                ChartPoint(9f, 32.5f, label = "Dur.: 9 - 33 bpm"),
+                ChartPoint(1.1f, 40f, label = "Dur.: 1.1 - 50 bpm", yValueRightAxis = 300f),
+                ChartPoint(3.2f, 10f, label = "Dur.: 3.2 - 10 bpm", yValueRightAxis = 345.2f),
+                ChartPoint(3.3f, 30.8f, label = "Dur.: 3.3 - 31 bpm", yValueRightAxis = 312.67f),
+                ChartPoint(3.4f, 12f, label = "Dur.: 3.4 - 2 bpm", yValueRightAxis = 309.98764f),
+                ChartPoint(1.6f, 26f, label = "Dur.: 1.6 - 26 bpm", yValueRightAxis = 318.98877f),
+                ChartPoint(9f, 32.5f, label = "Dur.: 9 - 33 bpm", yValueRightAxis = 321.2123f),
                 ChartPoint(2.3f, 17.89f, label = "Dur.: 2.3 - 8 bpm")
             )
 

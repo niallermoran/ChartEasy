@@ -30,7 +30,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.niallermoran.charteasy.AxisConfig
 import com.niallermoran.charteasy.AxisType
 import com.niallermoran.charteasy.BottomAxisConfig
 import com.niallermoran.charteasy.Chart
@@ -39,6 +38,7 @@ import com.niallermoran.charteasy.DataProvider
 
 import com.niallermoran.charteasy.PieChart
 import com.niallermoran.charteasy.PieChartConfig
+import com.niallermoran.charteasy.VerticalAxisConfig
 import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
 import com.niallermoran.charteasysampleapp.layouts.EasyCard
 import com.niallermoran.charteasysampleapp.model.AppSettings
@@ -105,7 +105,9 @@ fun SamplesCharts() {
             chartConfig = ChartConfig(
                 plotAreaPadding = PaddingValues(start = 0.dp, end = 0.dp)
             ),
-            leftAxisConfig = AxisConfig(
+            rightAxisConfig = VerticalAxisConfig(
+            ),
+            leftAxisConfig = VerticalAxisConfig(
                 type = AxisType.Bar,
                 dataPoints = points,
                 showFillColour = settings.fillCharts,
@@ -123,7 +125,7 @@ fun SamplesCharts() {
                 display = showAxes,
                 displayLabels = showLabels,
                 displayTicks = showTicks,
-                  maxNumberOfLabelsToDisplay = 3,
+               //   maxNumberOfLabelsToDisplay = 3,
                 labelPadding = PaddingValues(10.dp),
                 tickLength = 10.dp
             ),
@@ -211,7 +213,7 @@ fun SamplesCharts() {
                     chartConfig = ChartConfig(
                         plotAreaPadding = PaddingValues(start = 10.dp, end=10.dp)
                     ),
-                    leftAxisConfig = AxisConfig(
+                    leftAxisConfig = VerticalAxisConfig(
                         type = AxisType.Bar,
                         dataPoints = points,
                         showFillColour = settings.fillCharts,
@@ -235,7 +237,7 @@ fun SamplesCharts() {
         EasyCard(title = "Formatted with Random Data") {
             Chart(
 
-                leftAxisConfig = AxisConfig(
+                leftAxisConfig = VerticalAxisConfig(
                     dataPoints = points,
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
@@ -275,7 +277,7 @@ fun SamplesCharts() {
              */
             Chart(
 
-                leftAxisConfig = AxisConfig(
+                leftAxisConfig = VerticalAxisConfig(
                     dataPoints = timeSeries1,
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
@@ -296,14 +298,15 @@ fun SamplesCharts() {
                     display = showAxes,
                     displayLabels = showLabels,
                     displayTicks = showTicks,
-                    maxNumberOfLabelsToDisplay = 5
+                    maxNumberOfLabelsToDisplay = 5,
+                    formatAxisLabel = { x ->
+                        // x represents an epoch in milliseconds
+                        val date = Date(x.toLong())
+                        val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
+                        dateFormatter.format(date)
+                    }
                 ),
-                formatBottomAxisLabel = { x ->
-                    // x represents an epoch in milliseconds
-                    val date = Date(x.toLong())
-                    val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
-                    dateFormatter.format(date)
-                }
+
             )
         }
 
@@ -314,7 +317,7 @@ fun SamplesCharts() {
              */
             Chart(
 
-                leftAxisConfig = AxisConfig(
+                leftAxisConfig = VerticalAxisConfig(
                     dataPoints = timeSeries1,
                     tickColor = Color.Gray,
                     axisColor = Color.Gray,
@@ -341,14 +344,15 @@ fun SamplesCharts() {
                     display = showAxes,
                     displayLabels = showLabels,
                     displayTicks = showTicks,
-                    maxNumberOfLabelsToDisplay = 5
+                    maxNumberOfLabelsToDisplay = 5,
+                    formatAxisLabel = { x ->
+                        // x represents an epoch in milliseconds
+                        val date = Date(x.toLong())
+                        val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
+                        dateFormatter.format(date)
+                    }
                 ),
-                formatBottomAxisLabel = { x ->
-                    // x represents an epoch in milliseconds
-                    val date = Date(x.toLong())
-                    val dateFormatter = SimpleDateFormat("MMM d", Locale.ENGLISH)
-                    dateFormatter.format(date)
-                }
+
             )
         }
 

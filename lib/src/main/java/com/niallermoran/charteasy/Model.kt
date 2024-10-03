@@ -15,21 +15,20 @@ import androidx.compose.ui.unit.sp
 
 
 data class LeftAxisArea( var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp() )
+data class RightAxisArea(var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp())
 
 data class BottomAxisArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp() )
-data class RightAxisArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp())
 data class PlotArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp(), var padding:PaddingValues = PaddingValues(0.dp),
                     var innerOffset: OffsetDp = OffsetDp(), var barWidth: Dp = 0.dp)
 
-data class LeftAxisLabel( val text: TextLayoutResult )
-data class BottomAxisLabel( val text: TextLayoutResult )
-
+data class AxisLabel( val text: TextLayoutResult )
 
 data class OffsetDp( val left:Dp = 0.dp, val top: Dp = 0.dp )
 data class SizeDp( val width:Dp = 0.dp, val height: Dp = 0.dp )
 
 data class BottomAxisConfig(
 
+    val formatAxisLabel: ((Float) -> String)? = null,
     val axisColor: Color = Color.Black,
     val axisStrokeWidth: Dp = 2.dp,
     val tickStrokeWidth: Dp = 2.dp,
@@ -68,7 +67,10 @@ data class BottomAxisConfig(
 )
 
 
-data class AxisConfig(
+
+data class VerticalAxisConfig(
+
+    val formatAxisLabel: ((Float) -> String)? = null,
 
     val showCircles: Boolean = true,
 
@@ -131,13 +133,25 @@ data class AxisConfig(
     val tickLength: Dp = 10.dp,
 
     /**
-     * Set the minimum value used for the Y axis to control how much of the plot area the graph fills
+     * Set the minimum value used for the left Y axis to control how much of the plot area the graph fills
      * To use the min value from your data points do not set this or set to zero, which will force the chart to fill the full plot area
      */
     val minY: Float? = null,
 
     /**
-     * Set the maximum value used for the Y axis to control how much of the plot area the graph fills
+     * Set the minimum value used for the right Y axis to control how much of the plot area the graph fills
+     * To use the min value from your data points do not set this or set to zero, which will force the chart to fill the full plot area
+     */
+    val minYRight: Float? = null,
+
+    /**
+     * Set the maximum value used for the right Y axis to control how much of the plot area the graph fills
+     * To use the max value from your data points do not set this or set to zero, , which will force the chart to fill the full plot area
+     */
+    val maxYRight: Float? = null,
+
+    /**
+     * Set the maximum value used for the left Y axis to control how much of the plot area the graph fills
      * To use the max value from your data points do not set this or set to zero, , which will force the chart to fill the full plot area
      */
     val maxY: Float? = null,
@@ -192,18 +206,24 @@ data class ChartConfig(
 
 
 /**
- * Represents a data point to be plotted
+ * Represents a data point to be plotted. The ChartPoint must contain values representing the left axis
+ * and can contain points for the right axis
  * @param xValue the value to use for the xAxis
- * @param yValue the value to use for the y axis
+ * @param yValue the value to use for the left y axis
+ * @param yValueRightAxis the value to use for the right y axis
+ * @param labelRightAxis the text used to display along side the point on the chart for the yValueRightAxis
+ * @param label the text used to display along side the point on the chart for the yValue
  * @param data is any data you want to attach to the point
  */
 data class ChartPoint(
     val xValue: Float,
     val yValue: Float,
     val data: Any? = null,
-    val key: String? = null,
-    val label: String? = null
+    val label: String? = null,
+    val yValueRightAxis: Float? = null,
+    val labelRightAxis: String? = null,
 )
+
 
 data class CrossHairs(
     val display: Boolean = true,
@@ -215,10 +235,10 @@ data class CrossHairs(
 
 data class Config(
     val chartConfig: ChartConfig = ChartConfig(),
-    val leftAxisConfig: AxisConfig = AxisConfig(),
+    val leftAxisConfig: VerticalAxisConfig = VerticalAxisConfig(),
     val bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
-    val formatBottomAxisLabel: ((Float) -> String)? = null,
-    val formatLeftAxisLabel: ((Float) -> String)? = null,
+    val rightAxisConfig: VerticalAxisConfig = VerticalAxisConfig(),
+
 )
 
 /**
@@ -234,8 +254,9 @@ enum class AxisType {
  */
 data class Dimensions(
     val chart: ChartDimensions = ChartDimensions(),
-    val leftAxisLabels: ArrayList<LeftAxisLabel> = ArrayList(),
-    val bottomAxisLabels: ArrayList<BottomAxisLabel> = ArrayList(),
+    var rightAxisLabels: ArrayList<AxisLabel> = ArrayList(),
+    var leftAxisLabels: ArrayList<AxisLabel> = ArrayList(),
+    val bottomAxisLabels: ArrayList<AxisLabel> = ArrayList(),
     val dataValues: DataValues = DataValues()
 )
 
@@ -250,5 +271,5 @@ data class ChartDimensions(
     var chartSize: SizeDp = SizeDp(0.dp, 0.dp)
 )
 
-data class DataValues(var xMin: Float = 0f, var yMin:Float = 0f, var xMax: Float = 0f, var yMax:Float = 0f, var points: List<ChartPoint> = ArrayList() )
+data class DataValues(var xMin: Float = 0f, var yMin:Float = 0f, var xMax: Float = 0f, var yMax:Float = 0f, var yMinRight: Float = 0f, var yMaxRight: Float = 0f,  var points: List<ChartPoint> = ArrayList() )
 

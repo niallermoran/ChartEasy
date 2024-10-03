@@ -46,18 +46,15 @@ import kotlin.math.sqrt
 @Composable
 fun Chart(
     chartConfig: ChartConfig = ChartConfig(),
-    leftAxisConfig: AxisConfig,
+    leftAxisConfig: VerticalAxisConfig,
     bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
-    formatBottomAxisLabel: ((Float) -> String)? = null,
-    formatLeftAxisLabel: ((Float) -> String)? = null,
+    rightAxisConfig: VerticalAxisConfig? = null,
 ) {
     val density = LocalDensity.current
     val config = Config(
         chartConfig = chartConfig,
         leftAxisConfig = leftAxisConfig,
-        bottomAxisConfig = bottomAxisConfig,
-        formatLeftAxisLabel = formatLeftAxisLabel,
-        formatBottomAxisLabel = formatBottomAxisLabel
+        bottomAxisConfig = bottomAxisConfig
     )
 
     BoxWithConstraints(
@@ -65,7 +62,7 @@ fun Chart(
             .fillMaxSize()
     )
     {
-        // we can do nothing without a left axis config
+        // we can do nothing without a left axis config and more than one data point
         if (leftAxisConfig.dataPoints.size > 1) {
 
             val textMeasurer = rememberTextMeasurer()
@@ -80,6 +77,9 @@ fun Chart(
 
             // left axis
             DrawLeftAxisArea(config = config, dimensions = dimensions)
+
+            // right axis
+            DrawRightAxisArea(config = config, dimensions = dimensions)
 
             // bottom axis
             //DrawBox(topLeftOffset = dimensions.chart.bottomAxisArea.offset, size = dimensions.chart.bottomAxisArea.size, color = Color.Red)
@@ -215,6 +215,60 @@ private fun DrawLeftAxisArea(config: Config, dimensions: Dimensions) {
                         LayoutDirection.Ltr
                     ).toPx(),
                     y = pxTick - (leftAxisLabel.text.size.height / 2)
+                )
+            )
+        }
+    }
+
+
+}
+
+
+@Composable
+private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
+
+    val topLeftOffset = OffsetDp(dimensions.chart.chartSize.width - dimensions.chart.rightAxisArea.size.width, 0.dp)
+
+    Canvas(
+        modifier = Modifier
+            .size(
+                dimensions.chart.rightAxisArea.size.width,
+                dimensions.chart.rightAxisArea.size.height
+            )
+            .offset(x = topLeftOffset.left, topLeftOffset.top)
+            .background(Color.Green)
+    ) {
+
+        val widthPx = size.width
+        val heightPx = size.height
+
+        // draw axis line
+        drawLine(
+            color = config.rightAxisConfig.axisColor,
+            start = Offset(0f, 0f),
+            end = Offset(0f, heightPx)
+        )
+
+        // draw ticks and labels
+        val yPxBetweenTicks = heightPx / (dimensions.rightAxisLabels.size - 1)
+
+        dimensions.rightAxisLabels.forEachIndexed { index, label ->
+
+            val pxTick = size.height - (yPxBetweenTicks * (index))
+            drawLine(
+                color = config.rightAxisConfig.tickColor,
+                start = Offset(0f, pxTick ),
+                end = Offset(
+                    x = config.rightAxisConfig.tickLength.toPx(),
+                    y = pxTick
+                )
+            )
+
+            drawText(
+                textLayoutResult = label.text,
+                topLeft = Offset(
+                    x = config.rightAxisConfig.tickLength.toPx() + config.rightAxisConfig.labelPadding.calculateLeftPadding(LayoutDirection.Ltr).toPx(),
+                    y = pxTick - (label.text.size.height / 2)
                 )
             )
         }
