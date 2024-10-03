@@ -1,10 +1,6 @@
-import android.util.Log
+import android.graphics.Color
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -12,8 +8,6 @@ import androidx.compose.ui.unit.dp
 import com.niallermoran.charteasy.AxisLabel
 import com.niallermoran.charteasy.AxisType
 import com.niallermoran.charteasy.BottomAxisArea
-import com.niallermoran.charteasy.ChartDimensions
-import com.niallermoran.charteasy.ChartPoint
 import com.niallermoran.charteasy.Config
 import com.niallermoran.charteasy.Dimensions
 import com.niallermoran.charteasy.LeftAxisArea
@@ -22,7 +16,7 @@ import com.niallermoran.charteasy.PlotArea
 import com.niallermoran.charteasy.RightAxisArea
 import com.niallermoran.charteasy.SizeDp
 import com.niallermoran.charteasy.VerticalAxisConfig
-import java.util.Hashtable
+import kotlin.random.Random
 
 /**
  * Calculates all required dimensions for the chart to be built
@@ -66,6 +60,12 @@ fun calculateDimensions(
 
     return dimensions
 
+}
+
+fun getRandomColour() : Int
+{
+    val random = Color.argb(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
+    return random
 }
 
 /**

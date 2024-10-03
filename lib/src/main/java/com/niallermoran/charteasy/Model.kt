@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import getRandomColour
 
 
 data class LeftAxisArea( var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp() )
@@ -40,28 +41,27 @@ data class OffsetDp( val left:Dp = 0.dp, val top: Dp = 0.dp )
 data class SizeDp( val width:Dp = 0.dp, val height: Dp = 0.dp )
 
 data class BottomAxisConfig(
-
     val gridLines: GridLines = GridLines(),
-
     val formatAxisLabel: ((Float) -> String)? = null,
-    val axisColor: Color = Color.Black,
-    val axisStrokeWidth: Dp = 2.dp,
-    val tickStrokeWidth: Dp = 2.dp,
-    val tickColor: Color = Color.Black,
+    val axisColor: Color = Color.LightGray,
+    val axisStrokeWidth: Dp = 1.dp,
+    val tickStrokeWidth: Dp = 1.dp,
+    val tickColor: Color = Color.LightGray,
     val tickLength: Dp = 10.dp,
     val labelStyle: TextStyle = TextStyle(
         fontSize = 12.sp,
         textAlign = TextAlign.Center,
-        background = Color.Transparent
+        background = Color.Transparent,
+        color = Color.Gray
     ),
-    val labelOverflow: TextOverflow = TextOverflow.Visible,
+    val labelOverflow: TextOverflow = TextOverflow.Ellipsis,
     val labelPadding: PaddingValues = PaddingValues(0.dp),
 
     /**
      * Defines the maximum number of ticks and labels to display on the bottom axis.
      * If left empty then all points will have a tick and label shown
      */
-    val maxNumberOfLabelsToDisplay: Int? = null,
+    val maxNumberOfLabelsToDisplay: Int = 20,
 
     val labelMaxLines: Int = 1,
 
@@ -82,7 +82,7 @@ data class BottomAxisConfig(
 )
 
 
-data class GridLines( var display: Boolean = true, var color: Color = Color.LightGray, var strokeWidth: Float = 1f )
+data class GridLines( var display: Boolean = true, var color: Color = Color.LightGray, var strokeWidth: Float = 0.1f )
 
 data class VerticalAxisConfig(
 
@@ -108,11 +108,21 @@ data class VerticalAxisConfig(
     val display: Boolean = true,
 
     val showFillColour: Boolean = true,
-    val fillBrush: Brush = Brush.verticalGradient(listOf(Color.LightGray, Color.Gray)),
 
-    val lineColor: Color = Color.DarkGray,
-    val circleColor: Color = Color.Gray,
-    val circleRadius: Dp = 8.dp,
+
+    /**
+     * Define a fill brush to use to fill the bars or line
+     */
+    val fillBrush: Brush = Brush.verticalGradient( listOf(Color.White , Color(getRandomColour() ) ) ),
+
+    /**
+     * Apply transparency
+     */
+    val fillAlpha: Float = 1f,
+
+    val lineColor: Color = Color(getRandomColour()),
+    val circleColor: Color = Color(getRandomColour()),
+    val circleRadius: Dp = 2.dp,
 
     /**
      * If true draws a bezier curve through the points to smooth corners
@@ -137,17 +147,17 @@ data class VerticalAxisConfig(
      */
     var dataPoints: List<ChartPoint> = ArrayList(),
 
-    val axisColor: Color = Color.Black,
-    val axisStrokeWidth: Dp = 2.dp,
-    val tickStrokeWidth: Dp = 2.dp,
-    val lineStrokeWidth: Dp = 8.dp,
+    val axisColor: Color = Color.LightGray,
+    val axisStrokeWidth: Dp = 1.dp,
+    val tickStrokeWidth: Dp = 1.dp,
+    val lineStrokeWidth: Dp = 1.dp,
 
 
     /**
      * Set the type of chart to draw for the left axis values
      */
     val type: AxisType = AxisType.Line,
-    val tickColor: Color = Color.Black,
+    val tickColor: Color = Color.LightGray,
     val tickLength: Dp = 10.dp,
 
     /**
@@ -156,17 +166,17 @@ data class VerticalAxisConfig(
      */
     val minY: Float? = null,
 
-    /**
+  /*  *//**
      * Set the minimum value used for the right Y axis to control how much of the plot area the graph fills
      * To use the min value from your data points do not set this or set to zero, which will force the chart to fill the full plot area
-     */
+     *//*
     val minYRight: Float? = null,
 
-    /**
+    *//**
      * Set the maximum value used for the right Y axis to control how much of the plot area the graph fills
      * To use the max value from your data points do not set this or set to zero, , which will force the chart to fill the full plot area
-     */
-    val maxYRight: Float? = null,
+     *//*
+    val maxYRight: Float? = null,*/
 
     /**
      * Set the maximum value used for the left Y axis to control how much of the plot area the graph fills
@@ -180,6 +190,7 @@ data class VerticalAxisConfig(
     val labelPadding: PaddingValues = PaddingValues(start=2.dp, end=6.dp),
 
     val labelStyle: TextStyle = TextStyle(
+        color = Color.Gray,
         fontSize = 12.sp,
         textAlign = TextAlign.Center,
         background = Color.Transparent,
@@ -257,7 +268,7 @@ data class Config(
     val bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
     val rightAxisConfig: VerticalAxisConfig = VerticalAxisConfig(),
 
-)
+    )
 
 /**
  * The type of axis to use for left or right axis on a line/bar chart

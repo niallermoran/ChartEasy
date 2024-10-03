@@ -19,6 +19,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
@@ -140,7 +141,6 @@ private fun DrawScope.drawBarPlot(
     val plotAreaHeight = dimensions.chart.plotArea.innerHeight
 
     val lineColor = if( rightAxis ) config.rightAxisConfig.lineColor else config.leftAxisConfig.lineColor
-    //val fillBrush = if( rightAxis ) config.rightAxisConfig.fillBrush else config.leftAxisConfig.lineColor
 
     val spaceBetweenBarCenters = plotAreaWidth / ( points.size - 1)
     points.forEachIndexed { index, chartPoint ->
@@ -161,7 +161,23 @@ private fun DrawScope.drawBarPlot(
             path.lineTo( barRightX, barTopY)
             path.lineTo( barRightX, barBottomY)
 
-            drawPath(path, color= lineColor )
+            val axisConfig = if( rightAxis) config.rightAxisConfig else config.leftAxisConfig
+
+
+            drawPath(
+                path = path,
+                color = axisConfig.lineColor,
+                style = Stroke(width = axisConfig.lineStrokeWidth.toPx())
+            )
+
+            if( axisConfig.showFillColour ) {
+                drawPath(
+                    path = path,
+                    brush = axisConfig.fillBrush,
+                    style = Fill,
+                    alpha = axisConfig.fillAlpha
+                )
+            }
         }
     }
 
@@ -322,7 +338,7 @@ private fun DrawScope.drawLinePlot(
                 path = pathFill,
                 brush = ( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).fillBrush,
                 style = Fill,
-                alpha = 0.3f,
+                alpha = ( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).fillAlpha,
             )
         }
 
@@ -408,13 +424,13 @@ private fun DrawBottomAxisArea(config: Config, dimensions: Dimensions) {
 
 
         val widthPx =  dimensions.chart.plotArea.size.width.toPx() - dimensions.chart.plotArea.padding.calculateLeftPadding(LayoutDirection.Ltr).toPx() - dimensions.chart.plotArea.padding.calculateRightPadding(LayoutDirection.Ltr).toPx()
-        val heightPx = dimensions.chart.plotArea.size.height.toPx() - dimensions.chart.plotArea.padding.calculateTopPadding().toPx() - dimensions.chart.plotArea.padding.calculateBottomPadding().toPx()
 
         // draw axis line
         drawLine(
+            strokeWidth = config.bottomAxisConfig.axisStrokeWidth.toPx(),
             color = config.bottomAxisConfig.axisColor,
             start = Offset(0f, 0f),
-            end = Offset( dimensions.chart.chartSize.width.toPx() - dimensions.chart.leftAxisArea.size.width.toPx(), 0f)
+            end = Offset( dimensions.chart.plotArea.size.width.toPx(), 0f)
         )
 
         // draw ticks and labels
