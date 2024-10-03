@@ -104,10 +104,10 @@ fun SamplesCharts() {
     Box(modifier = Modifier.padding(12.dp)) {
         Chart(
             chartConfig = ChartConfig(
-                plotAreaPadding = PaddingValues(start = 0.dp, end = 0.dp)
+                //plotAreaPadding = PaddingValues(start = 0.dp, end = 0.dp)
             ),
             rightAxisConfig = VerticalAxisConfig(
-                type = AxisType.Line,
+                type = AxisType.Bar,
                 dataPoints = points,
                 showFillColour = settings.fillCharts,
                 display = showAxes,

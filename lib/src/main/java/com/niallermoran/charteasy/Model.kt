@@ -10,6 +10,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -18,10 +19,22 @@ data class LeftAxisArea( var topLeftOffset: OffsetDp = OffsetDp(), var size: Siz
 data class RightAxisArea(var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp())
 
 data class BottomAxisArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp() )
-data class PlotArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp(), var padding:PaddingValues = PaddingValues(0.dp),
-                    var innerOffset: OffsetDp = OffsetDp(), var barWidth: Dp = 0.dp)
+data class PlotArea(var offset: OffsetDp = OffsetDp(),
+                    var size: SizeDp = SizeDp(),
+                    var padding:PaddingValues = PaddingValues(0.dp),
+                    var innerTopLeftOffset: OffsetDp = OffsetDp(),
+                    var barWidth: Dp = 0.dp
+)
+{
+    val innerWidth: Dp
+        get() = size.width -  padding.calculateLeftPadding(LayoutDirection.Ltr) - padding.calculateRightPadding(LayoutDirection.Ltr)
 
-data class AxisLabel( val text: TextLayoutResult )
+    val innerHeight: Dp
+        get() = size.height -  padding.calculateTopPadding() - padding.calculateBottomPadding()
+}
+
+
+data class AxisLabel( val text: TextLayoutResult, val centerDistanceAlongAxis: Dp )
 
 data class OffsetDp( val left:Dp = 0.dp, val top: Dp = 0.dp )
 data class SizeDp( val width:Dp = 0.dp, val height: Dp = 0.dp )
