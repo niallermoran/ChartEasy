@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
             ChartEasySampleAppTheme {
                 // A surface container using the 'background' color from the theme
                 Box(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize().padding(12.dp )
                 ) {
                    Chart()
                 }

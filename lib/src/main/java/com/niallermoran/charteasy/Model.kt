@@ -6,7 +6,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -81,7 +83,6 @@ data class BottomAxisConfig(
     val display: Boolean = true
 )
 
-
 data class GridLines( var display: Boolean = true, var color: Color = Color.LightGray, var strokeWidth: Float = 0.1f )
 
 data class VerticalAxisConfig(
@@ -98,12 +99,12 @@ data class VerticalAxisConfig(
     val displayTicks: Boolean = true,
 
     /**
-     * Use this value to hide or show the bottom axis labels
+     * Use this value to hide or show the axis labels
      */
     val displayLabels: Boolean = true,
 
     /**
-     * Use this value to hide or show the bottom axis
+     * Use this value to hide or show the axis
      */
     val display: Boolean = true,
 
@@ -136,12 +137,6 @@ data class VerticalAxisConfig(
     val maxNumberOfLabelsToDisplay: Int? = null,
 
     /**
-     * A list of labels that will be displayed on the (Y) axis with lower indexes starting on the bottom
-     * The left axis will be divided equally to represent the labels.
-     */
-    //var labels: List<ChartAxisLabel>,
-
-    /**
      * The data points used to plot a chart.
      * For bar charts the number of data points must match the number of bottom labels
      */
@@ -166,17 +161,6 @@ data class VerticalAxisConfig(
      */
     val minY: Float? = null,
 
-  /*  *//**
-     * Set the minimum value used for the right Y axis to control how much of the plot area the graph fills
-     * To use the min value from your data points do not set this or set to zero, which will force the chart to fill the full plot area
-     *//*
-    val minYRight: Float? = null,
-
-    *//**
-     * Set the maximum value used for the right Y axis to control how much of the plot area the graph fills
-     * To use the max value from your data points do not set this or set to zero, , which will force the chart to fill the full plot area
-     *//*
-    val maxYRight: Float? = null,*/
 
     /**
      * Set the maximum value used for the left Y axis to control how much of the plot area the graph fills
@@ -196,7 +180,12 @@ data class VerticalAxisConfig(
         background = Color.Transparent,
     ),
 
-    val formatPointLabel: ((Int, ChartPoint) -> String)? = null,
+    /**
+     * Indicates if labels should be shown alongside points on the chart
+     */
+    val showPointLabels: Boolean = true,
+
+    val formatPointLabel: ((ChartPoint) -> String)? = null,
 
     /**
      * Defines the style for point labels when formatPointLabel is defined
@@ -215,6 +204,28 @@ data class VerticalAxisConfig(
      */
     val crossHairsConfig: CrossHairs = CrossHairs()
 )
+{
+    fun getPointLabelText( chartPoint: ChartPoint, rightAxis: Boolean, textMeasurer: TextMeasurer ) : TextLayoutResult
+    {
+        val lambda = formatPointLabel
+        val yValue = if (rightAxis) chartPoint.yValueRightAxis else chartPoint.yValue
+        var text = if (lambda != null) lambda(
+            chartPoint
+        ) else if (rightAxis) chartPoint.labelRightAxis else chartPoint.label
+
+        if (text == null)
+            text = String.format(java.util.Locale.ENGLISH, "%.2f", yValue)
+
+        val measure = textMeasurer.measure(
+            text,
+            pointLabelStyle,
+            labelOverflow,
+            maxLines = 1
+        )
+
+        return measure
+    }
+}
 
 data class ChartConfig(
 
