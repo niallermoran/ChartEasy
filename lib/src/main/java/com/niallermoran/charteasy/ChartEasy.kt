@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
@@ -48,13 +49,14 @@ fun Chart(
     chartConfig: ChartConfig = ChartConfig(),
     leftAxisConfig: VerticalAxisConfig,
     bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
-    rightAxisConfig: VerticalAxisConfig? = null,
+    rightAxisConfig: VerticalAxisConfig = VerticalAxisConfig(),
 ) {
     val density = LocalDensity.current
     val config = Config(
         chartConfig = chartConfig,
         leftAxisConfig = leftAxisConfig,
-        bottomAxisConfig = bottomAxisConfig
+        bottomAxisConfig = bottomAxisConfig,
+        rightAxisConfig = rightAxisConfig
     )
 
     BoxWithConstraints(
@@ -74,31 +76,12 @@ fun Chart(
                 availableWidth = with(density) { constraints.maxWidth.toDp() }
             )
 
-
-            // left axis
             DrawLeftAxisArea(config = config, dimensions = dimensions)
-
-            // right axis
             DrawRightAxisArea(config = config, dimensions = dimensions)
-
-            // bottom axis
-            //DrawBox(topLeftOffset = dimensions.chart.bottomAxisArea.offset, size = dimensions.chart.bottomAxisArea.size, color = Color.Red)
-
             DrawBottomAxisArea(config = config, dimensions = dimensions)
+            DrawPlotArea(config = config, dimensions = dimensions)
 
-            // plot area
-            //DrawBox(topLeftOffset = dimensions.chart.plotArea.offset, size = dimensions.chart.plotArea.size, color = Color.Transparent)
 
-            /*            if (config.leftAxisConfig.type == AxisType.Bar)
-                            BarPlot(dimensions, config.leftAxisConfig, textMeasurer)
-                        else if (config.leftAxisConfig.type == AxisType.Line)
-                            LinePlot(dimensions, config.leftAxisConfig, textMeasurer)
-
-                        LeftAxis(dimensions, textMeasurer, config)
-
-                        BottomAxis(dimensions, textMeasurer, config)
-
-                        CrossHairs(config = config, dimensions = dimensions)*/
 
         } else
             Text(text = "Not enough data", modifier = Modifier.align(Alignment.Center))
@@ -107,11 +90,235 @@ fun Chart(
 
 }
 
+@Composable
+private fun DrawPlotArea(config: Config, dimensions: Dimensions)
+{
+    val topLeftOffset = dimensions.chart.plotArea.offset
+    val textMeasurer = rememberTextMeasurer()
+
+    Canvas(
+        modifier = Modifier
+            .size(
+                dimensions.chart.plotArea.size.width,
+                dimensions.chart.plotArea.size.height
+            )
+            .offset(x = topLeftOffset.left, topLeftOffset.top)
+            .background(Color.Transparent)
+    ) {
+
+        if( config.leftAxisConfig.type == AxisType.Line )
+            drawLinePlot( config, dimensions, false, textMeasurer)
+
+        if( config.rightAxisConfig.type == AxisType.Line )
+            drawLinePlot( config, dimensions, true, textMeasurer)
+
+
+    }
+}
+
+
+private fun DrawScope.drawLinePlot(
+    config: Config,
+    dimensions: Dimensions,
+    rightAxis: Boolean = false,
+    textMeasurer: TextMeasurer
+) {
+        // x,y values
+        val points = dimensions.dataValues.points
+        val xMin = dimensions.dataValues.xMin
+        val yMin = if( rightAxis ) dimensions.dataValues.yMinRight else dimensions.dataValues.yMin
+        val xMax = dimensions.dataValues.xMax
+        val yMax = if( rightAxis ) dimensions.dataValues.yMaxRight else dimensions.dataValues.yMax
+
+        // x,y pixel points
+        val linePoints = ArrayList<PointF>(points.size)
+
+        val plotAreaWidth = dimensions.chart.plotArea.size.width
+        val plotAreaHeight = dimensions.chart.plotArea.size.height
+
+        // get the pixle co-ordniates for every point
+        for (point in points) {
+            // actual point add to path
+            val x = dimensions.chart.plotArea.size.width * (point.xValue -  dimensions.dataValues.xMin) / (xMax - xMin)
+            val yValue = if(rightAxis) point.yValueRightAxis else point.yValue
+
+            if( yValue != null ) {
+                val y =
+                    dimensions.chart.plotArea.size.height - (dimensions.chart.plotArea.size.height * (yValue - yMin) / (yMax - yMin))
+                linePoints.add(PointF(x.toPx(), y.toPx()))
+            }
+        }
+
+        // get a list of control points for Bezier curve
+        val splinePoints1 = ArrayList<PointF>()
+        val splinePoints2 = ArrayList<PointF>()
+        // splinePoints1.add(PointF(linePoints[0].x, linePoints[0].y))
+
+        points.forEachIndexed { index, chartPoint ->
+            val i = index + 1
+            if (i < linePoints.size) {
+                splinePoints1.add(
+                    PointF(
+                        (linePoints[i].x + linePoints[i - 1].x) / 2,
+                        linePoints[i - 1].y
+                    )
+                )
+                splinePoints2.add(
+                    PointF(
+                        (linePoints[i].x + linePoints[i - 1].x) / 2,
+                        linePoints[i].y
+                    )
+                )
+            }
+        }
+
+
+        // path for shape fill
+        val pathFill = Path()
+        pathFill.moveTo(0f, dimensions.chart.plotArea.size.height.toPx())
+
+        // path for line
+        val pathLine = Path()
+
+        // path for spline
+        val pathSpline = Path()
+
+        // draw line and fill
+        val smooth = if( rightAxis ) config.rightAxisConfig.smoothLine else config.leftAxisConfig.smoothLine
+        val showFillColour = if( rightAxis ) config.rightAxisConfig.showFillColour else config.leftAxisConfig.showFillColour
+
+        if (smooth) {
+            pathFill.lineTo(linePoints.first().x, linePoints.first().y)
+            pathSpline.moveTo(linePoints.first().x, linePoints.first().y)
+
+            //for (i in 1 until linePoints.size)
+            linePoints.forEachIndexed { i, linePoint ->
+                if (i > 0) {
+                    pathSpline.cubicTo(
+                        splinePoints1[i - 1].x, splinePoints1[i - 1].y,
+                        splinePoints2[i - 1].x, splinePoints2[i - 1].y,
+                        linePoints[i].x, linePoints[i].y
+                    )
+
+                    pathFill.cubicTo(
+                        splinePoints1[i - 1].x, splinePoints1[i - 1].y,
+                        splinePoints2[i - 1].x, splinePoints2[i - 1].y,
+                        linePoints[i].x, linePoints[i].y
+                    )
+                }
+            }
+
+            pathFill.lineTo(
+                dimensions.chart.plotArea.size.width.toPx(),
+                dimensions.chart.plotArea.size.height.toPx()
+            )
+        } else {
+            pathLine.moveTo(linePoints.first().x, linePoints.first().y)
+
+            linePoints.forEach { pointF ->
+                pathLine.lineTo(pointF.x, pointF.y)
+                pathFill.lineTo(pointF.x, pointF.y)
+            }
+
+            pathFill.lineTo(
+                dimensions.chart.plotArea.size.width.toPx(),
+                dimensions.chart.plotArea.size.height.toPx()
+            )
+        }
+
+
+        drawPath(
+            path = pathLine,
+            color = if( rightAxis) config.rightAxisConfig.lineColor else config.leftAxisConfig.lineColor,
+            style = Stroke(width = if( rightAxis ) config.rightAxisConfig.lineStrokeWidth.toPx() else config.leftAxisConfig.lineStrokeWidth.toPx())
+        )
+
+        if (points.size > 2 && smooth) {
+            drawPath(
+                path = pathSpline,
+                color = if( rightAxis) config.rightAxisConfig.lineColor else config.leftAxisConfig.lineColor,
+                style = Stroke(width = if( rightAxis ) config.rightAxisConfig.lineStrokeWidth.toPx() else config.leftAxisConfig.lineStrokeWidth.toPx())
+            )
+        }
+
+        if (showFillColour) {
+            drawPath(
+                path = pathFill,
+                brush = ( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).fillBrush,
+                style = Fill,
+                alpha = 0.3f,
+            )
+        }
+
+        if (( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).showCircles) {
+
+            if (points.size == 1) {
+                drawCircle(
+                    color = ( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).circleColor,
+                    center = Offset(
+                        plotAreaWidth.toPx(),
+                        plotAreaHeight.toPx()
+                    ),
+                    radius = ( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).circleRadius.value,
+
+                    )
+            } else {
+                for (i in 1..points.size) {
+                    val point = points[i - 1]
+
+                    val yValue = if(rightAxis) point.yValueRightAxis else point.yValue
+                    if( yValue != null) {
+
+                        val x =
+                        plotAreaWidth.toPx() * (point.xValue - xMin) / (xMax - xMin)
+                    val y =
+                        plotAreaHeight.toPx() - (plotAreaHeight.toPx() * (yValue - yMin) / (yMax - yMin))
+
+                        drawCircle(
+                            color = (if (rightAxis) config.rightAxisConfig else config.leftAxisConfig).circleColor,
+                            center = Offset(x, y),
+                            radius = (if (rightAxis) config.rightAxisConfig else config.leftAxisConfig).circleRadius.value,
+
+                            )
+                    }
+                }
+            }
+        }
+
+        val lambda = ( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).formatPointLabel
+        if (lambda != null) {
+            for (i in 1..points.size) {
+                val point = points[i - 1]
+                val text = lambda(i, point)
+                val measure = textMeasurer.measure(
+                    text,
+                    ( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).pointLabelStyle,
+                    ( if( rightAxis ) config.rightAxisConfig else config.leftAxisConfig).labelOverflow,
+                    maxLines = 1
+                )
+
+                val x =
+                    (plotAreaWidth.toPx() * (point.xValue - xMin) / (xMax - xMin)) - (measure.size.width / 2)
+                val y =
+                    plotAreaHeight.toPx() - (plotAreaHeight.toPx() * (point.yValue - yMin) / (yMax - yMin)) - ((measure.size.height) * 1.5f)
+
+
+                drawText(
+                    textLayoutResult = measure,
+                    topLeft = Offset(x, y)
+                )
+            }
+        }
+}
+
+
 
 @Composable
 private fun DrawBottomAxisArea(config: Config, dimensions: Dimensions) {
 
     val topLeftOffset = dimensions.chart.bottomAxisArea.offset
+    val gridLines = config.bottomAxisConfig.gridLines
+
 
     // all calcs are done in Dp as Float, make sure to convert to Pixels for drawing
     Canvas(
@@ -137,30 +344,42 @@ private fun DrawBottomAxisArea(config: Config, dimensions: Dimensions) {
         // draw ticks and labels
 
         // draw ticks and labels
-            val xPXBetweenTicks = widthPx / (dimensions.bottomAxisLabels.size - 1)
+        val xPXBetweenTicks = widthPx / (dimensions.bottomAxisLabels.size - 1)
 
-            dimensions.bottomAxisLabels.forEachIndexed { index, label ->
+        dimensions.bottomAxisLabels.forEachIndexed { index, label ->
 
-                val pxTick = xPXBetweenTicks * index
+            val pxTick = xPXBetweenTicks * index
 
+            drawLine(
+                color = config.bottomAxisConfig.tickColor,
+                start = Offset(pxTick, 0f),
+                end = Offset(
+                    x = pxTick,
+                    y = config.bottomAxisConfig.tickLength.toPx()
+                )
+            )
+            drawText(
+                textLayoutResult = label.text,
+                topLeft = Offset(
+                    x = pxTick - (label.text.size.width / 2),
+                    y = config.bottomAxisConfig.tickLength.toPx() + config.bottomAxisConfig.labelPadding.calculateTopPadding()
+                        .toPx()
+                )
+            )
+
+            if(gridLines.display)
+            {
                 drawLine(
-                    color = config.bottomAxisConfig.tickColor,
+                    strokeWidth = gridLines.strokeWidth,
+                    color = gridLines.color,
                     start = Offset(pxTick, 0f),
                     end = Offset(
                         x = pxTick,
-                        y = config.bottomAxisConfig.tickLength.toPx()
-                    )
-                )
-                drawText(
-                    textLayoutResult = label.text,
-                    topLeft = Offset(
-                        x = pxTick - (label.text.size.width / 2) ,
-                        y = config.bottomAxisConfig.tickLength.toPx() + config.bottomAxisConfig.labelPadding.calculateTopPadding().toPx()
+                        y = - dimensions.chart.plotArea.size.height.toPx()
                     )
                 )
             }
-
-
+        }
 
 
     }
@@ -171,6 +390,7 @@ private fun DrawBottomAxisArea(config: Config, dimensions: Dimensions) {
 private fun DrawLeftAxisArea(config: Config, dimensions: Dimensions) {
 
     val topLeftOffset = dimensions.chart.leftAxisArea.topLeftOffset
+    val gridLines = config.leftAxisConfig.gridLines
 
     Canvas(
         modifier = Modifier
@@ -200,7 +420,7 @@ private fun DrawLeftAxisArea(config: Config, dimensions: Dimensions) {
             val pxTick = size.height - (yPxBetweenTicks * (index))
             drawLine(
                 color = config.leftAxisConfig.tickColor,
-                start = Offset(widthPx, pxTick ),
+                start = Offset(widthPx, pxTick),
                 end = Offset(
                     x = widthPx - config.leftAxisConfig.tickLength.toPx(),
                     y = pxTick
@@ -217,6 +437,19 @@ private fun DrawLeftAxisArea(config: Config, dimensions: Dimensions) {
                     y = pxTick - (leftAxisLabel.text.size.height / 2)
                 )
             )
+
+            if(gridLines.display)
+            {
+                drawLine(
+                    strokeWidth = gridLines.strokeWidth,
+                    color = gridLines.color,
+                    start = Offset(widthPx, pxTick),
+                    end = Offset(
+                        x = widthPx + dimensions.chart.plotArea.size.width.toPx(),
+                        y = pxTick
+                    )
+                )
+            }
         }
     }
 
@@ -227,7 +460,11 @@ private fun DrawLeftAxisArea(config: Config, dimensions: Dimensions) {
 @Composable
 private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
 
-    val topLeftOffset = OffsetDp(dimensions.chart.chartSize.width - dimensions.chart.rightAxisArea.size.width, 0.dp)
+    val topLeftOffset =
+        OffsetDp(dimensions.chart.chartSize.width - dimensions.chart.rightAxisArea.size.width, 0.dp)
+
+    val gridLines = config.rightAxisConfig.gridLines
+    val density = LocalDensity.current
 
     Canvas(
         modifier = Modifier
@@ -257,7 +494,7 @@ private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
             val pxTick = size.height - (yPxBetweenTicks * (index))
             drawLine(
                 color = config.rightAxisConfig.tickColor,
-                start = Offset(0f, pxTick ),
+                start = Offset(0f, pxTick),
                 end = Offset(
                     x = config.rightAxisConfig.tickLength.toPx(),
                     y = pxTick
@@ -267,10 +504,26 @@ private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
             drawText(
                 textLayoutResult = label.text,
                 topLeft = Offset(
-                    x = config.rightAxisConfig.tickLength.toPx() + config.rightAxisConfig.labelPadding.calculateLeftPadding(LayoutDirection.Ltr).toPx(),
+                    x = config.rightAxisConfig.tickLength.toPx() + config.rightAxisConfig.labelPadding.calculateLeftPadding(
+                        LayoutDirection.Ltr
+                    ).toPx(),
                     y = pxTick - (label.text.size.height / 2)
                 )
             )
+
+            Log.d( "strokewidth", gridLines.strokeWidth.toString())
+            if(gridLines.display)
+            {
+                drawLine(
+                    strokeWidth = gridLines.strokeWidth,
+                    color = gridLines.color,
+                    start = Offset(0f, pxTick),
+                    end = Offset(
+                        x = - dimensions.chart.plotArea.size.width.toPx(),
+                        y = pxTick
+                    )
+                )
+            }
         }
     }
 
@@ -444,257 +697,6 @@ private fun CrossHairs(config: Config, dimensions: Dimensions) {
     }
 
 
-}
-
-@Composable
-private fun LeftAxis(
-    dimensions: Dimensions,
-    textMeasurer: TextMeasurer,
-    config: Config
-) {
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-
-        val axisPath = Path()
-        axisPath.moveTo(x = dimensions.chart.leftAxisWidth.toPx(), y = 0f)
-        axisPath.lineTo(
-            x = dimensions.chart.leftAxisWidth.toPx(),
-            y = dimensions.chart.plotAreaHeight.toPx()
-        )
-        drawPath(
-            path = axisPath,
-            color = config.leftAxisConfig.axisColor,
-            style = Stroke(width = config.leftAxisConfig.axisStrokeWidth.toPx())
-        )
-    }
-
-
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-
-        dimensions.leftAxisLabelMap?.forEach { y, labelText ->
-
-            val measure = textMeasurer.measure(
-                labelText,
-                config.leftAxisConfig.labelStyle,
-                config.leftAxisConfig.labelOverflow,
-                maxLines = 1
-            )
-
-            if (config.leftAxisConfig.displayTicks) {
-                drawLine(
-                    color = config.leftAxisConfig.tickColor,
-                    start = Offset(
-                        dimensions.chart.leftAxisWidth.toPx(),
-                        y.toPx()
-                    ),
-                    end = Offset(
-                        dimensions.chart.leftAxisWidth.toPx() - config.leftAxisConfig.tickLength.toPx(),
-                        y.toPx()
-                    ),
-                    strokeWidth = config.bottomAxisConfig.tickStrokeWidth.toPx()
-                )
-            }
-
-            if (config.leftAxisConfig.displayLabels) {
-                drawText(
-                    topLeft = Offset(
-                        x = dimensions.chart.leftAxisWidth.toPx() - config.leftAxisConfig.tickLength.toPx() - measure.size.width
-                            .toDp()
-                            .toPx(),
-                        y = y.toPx() - measure.size.height / 2
-                    ),
-                    textLayoutResult = measure,
-                    color = config.leftAxisConfig.labelStyle.color
-                )
-            }
-        }
-
-    }
-}
-
-@Composable
-private fun LinePlot(
-    dimensions: Dimensions,
-    config: AxisConfig,
-    textMeasurer: TextMeasurer
-) {
-
-    Canvas(
-        modifier = Modifier
-            .offset(x = dimensions.chart.plotAreaInnerStart, y = dimensions.chart.plotAreaInnerTop)
-            .width(dimensions.chart.plotAreaInnerWidth)
-            .height(dimensions.chart.plotAreaInnerHeight)
-
-    )
-    {
-        val points = config.dataPoints.sortedBy { it.xValue }
-        val linePoints = ArrayList<PointF>(points.size)
-
-        for (point in points) {
-            // actual point add to path
-            val x =
-                dimensions.chart.plotAreaWidth * (point.xValue - dimensions.xMin) / (dimensions.xMax - dimensions.xMin)
-            val y =
-                dimensions.chart.plotAreaHeight - (dimensions.chart.plotAreaHeight * (point.yValue - dimensions.yMin) / (dimensions.yMax - dimensions.yMin))
-            linePoints.add(PointF(x.toPx(), y.toPx()))
-        }
-
-        // get a list of control points for Bezier curve
-        val splinePoints1 = ArrayList<PointF>()
-        val splinePoints2 = ArrayList<PointF>()
-        // splinePoints1.add(PointF(linePoints[0].x, linePoints[0].y))
-
-        points.forEachIndexed { index, chartPoint ->
-            val i = index + 1
-            if (i < linePoints.size) {
-                splinePoints1.add(
-                    PointF(
-                        (linePoints[i].x + linePoints[i - 1].x) / 2,
-                        linePoints[i - 1].y
-                    )
-                )
-                splinePoints2.add(
-                    PointF(
-                        (linePoints[i].x + linePoints[i - 1].x) / 2,
-                        linePoints[i].y
-                    )
-                )
-            }
-        }
-
-
-        // path for shape fill
-        val pathFill = Path()
-        pathFill.moveTo(0f, dimensions.chart.plotAreaHeight.toPx())
-
-        // path for line
-        val pathLine = Path()
-
-        // path for spline
-        val pathSpline = Path()
-
-        // draw line and fill
-        if (config.smoothLine) {
-            pathFill.lineTo(linePoints.first().x, linePoints.first().y)
-            pathSpline.moveTo(linePoints.first().x, linePoints.first().y)
-
-            //for (i in 1 until linePoints.size)
-            linePoints.forEachIndexed { i, linePoint ->
-                if (i > 0) {
-                    pathSpline.cubicTo(
-                        splinePoints1[i - 1].x, splinePoints1[i - 1].y,
-                        splinePoints2[i - 1].x, splinePoints2[i - 1].y,
-                        linePoints[i].x, linePoints[i].y
-                    )
-
-                    pathFill.cubicTo(
-                        splinePoints1[i - 1].x, splinePoints1[i - 1].y,
-                        splinePoints2[i - 1].x, splinePoints2[i - 1].y,
-                        linePoints[i].x, linePoints[i].y
-                    )
-                }
-            }
-
-            pathFill.lineTo(
-                dimensions.chart.plotAreaWidth.toPx(),
-                dimensions.chart.plotAreaHeight.toPx()
-            )
-        } else {
-            pathLine.moveTo(linePoints.first().x, linePoints.first().y)
-
-            linePoints.forEach { pointF ->
-                pathLine.lineTo(pointF.x, pointF.y)
-                pathFill.lineTo(pointF.x, pointF.y)
-            }
-
-            pathFill.lineTo(
-                dimensions.chart.plotAreaWidth.toPx(),
-                dimensions.chart.plotAreaHeight.toPx()
-            )
-        }
-
-
-        drawPath(
-            path = pathLine,
-            color = config.lineColor,
-            style = Stroke(width = config.lineStrokeWidth.value)
-        )
-
-        if (points.size > 2 && config.smoothLine) {
-            drawPath(
-                path = pathSpline,
-                color = config.lineColor,
-                style = Stroke(width = config.lineStrokeWidth.value)
-            )
-        }
-
-        if (config.showFillColour) {
-            drawPath(
-                path = pathFill,
-                brush = config.fillBrush,
-                style = Fill,
-                alpha = 0.3f,
-            )
-        }
-
-        if (config.showCircles) {
-
-            if (points.size == 1) {
-                drawCircle(
-                    color = config.circleColor,
-                    center = Offset(
-                        dimensions.chart.plotAreaWidth.toPx(),
-                        dimensions.chart.plotAreaHeight.toPx()
-                    ),
-                    radius = config.circleRadius.value,
-
-                    )
-            } else {
-                for (i in 1..points.size) {
-                    val point = points[i - 1]
-                    val x =
-                        dimensions.chart.plotAreaWidth.toPx() * (point.xValue - dimensions.xMin) / (dimensions.xMax - dimensions.xMin)
-                    val y =
-                        dimensions.chart.plotAreaHeight.toPx() - (dimensions.chart.plotAreaHeight.toPx() * (point.yValue - dimensions.yMin) / (dimensions.yMax - dimensions.yMin))
-
-                    drawCircle(
-                        color = config.circleColor,
-                        center = Offset(x, y),
-                        radius = config.circleRadius.value,
-
-                        )
-                }
-            }
-        }
-
-        val lambda = config.formatPointLabel
-        if (lambda != null) {
-            for (i in 1..points.size) {
-                val point = points[i - 1]
-                val text = lambda(i, point)
-                val measure = textMeasurer.measure(
-                    text,
-                    config.pointLabelStyle,
-                    config.labelOverflow,
-                    maxLines = 1
-                )
-
-                val x =
-                    (dimensions.chart.plotAreaWidth.toPx() * (point.xValue - dimensions.xMin) / (dimensions.xMax - dimensions.xMin)) - (measure.size.width / 2)
-                val y =
-                    dimensions.chart.plotAreaHeight.toPx() - (dimensions.chart.plotAreaHeight.toPx() * (point.yValue - dimensions.yMin) / (dimensions.yMax - dimensions.yMin)) - ((measure.size.height) * 1.5f)
-
-
-                drawText(
-                    textLayoutResult = measure,
-                    topLeft = Offset(x, y)
-                )
-            }
-        }
-
-
-    }
 }
 
 @Composable

@@ -43,8 +43,8 @@ fun calculateDimensions(
         dimensions.dataValues.points = if (config.leftAxisConfig.type == AxisType.Bar) config.leftAxisConfig.dataPoints else config.leftAxisConfig.dataPoints.sortedBy { it.xValue } //.sortedBy { it.xValue }
         dimensions.dataValues.yMin = config.leftAxisConfig.minY ?: dimensions.dataValues.points.minOf { it.yValue }
         dimensions.dataValues.yMax = config.leftAxisConfig.maxY ?: dimensions.dataValues.points.maxOf { it.yValue }
-        dimensions.dataValues.yMinRight = config.leftAxisConfig.minY ?: dimensions.dataValues.points.minOf { it.yValueRightAxis ?: 0f }
-        dimensions.dataValues.yMaxRight = config.leftAxisConfig.maxY ?: dimensions.dataValues.points.maxOf { it.yValueRightAxis ?: 0f  }
+        dimensions.dataValues.yMinRight = config.rightAxisConfig.minY ?: dimensions.dataValues.points.filter { it.yValueRightAxis != null }.minOf { it.yValueRightAxis!!  }
+        dimensions.dataValues.yMaxRight = config.rightAxisConfig.maxY ?: dimensions.dataValues.points.filter { it.yValueRightAxis != null }.maxOf { it.yValueRightAxis!!  }
         dimensions.dataValues.xMin = dimensions.dataValues.points.minOf { it.xValue }
         dimensions.dataValues.xMax = dimensions.dataValues.points.maxOf { it.xValue }
 

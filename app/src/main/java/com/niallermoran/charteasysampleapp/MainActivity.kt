@@ -35,6 +35,7 @@ import com.niallermoran.charteasy.BottomAxisConfig
 import com.niallermoran.charteasy.Chart
 import com.niallermoran.charteasy.ChartConfig
 import com.niallermoran.charteasy.DataProvider
+import com.niallermoran.charteasy.GridLines
 
 import com.niallermoran.charteasy.PieChart
 import com.niallermoran.charteasy.PieChartConfig
@@ -106,9 +107,20 @@ fun SamplesCharts() {
                 plotAreaPadding = PaddingValues(start = 0.dp, end = 0.dp)
             ),
             rightAxisConfig = VerticalAxisConfig(
+                type = AxisType.Line,
+                dataPoints = points,
+                showFillColour = settings.fillCharts,
+                display = showAxes,
+                displayLabels = showLabels,
+                displayTicks = showTicks,
+                lineStrokeWidth = lineThickness.dp,
+                labelStyle = TextStyle( fontSize = 14.sp ),
+                labelPadding = PaddingValues(end=4.dp, start = 4.dp),
+                tickLength = 10.dp
+                //maxNumberOfLabelsToDisplay = 4
             ),
             leftAxisConfig = VerticalAxisConfig(
-                type = AxisType.Bar,
+                type = AxisType.Line,
                 dataPoints = points,
                 showFillColour = settings.fillCharts,
                 display = showAxes,

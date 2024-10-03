@@ -28,6 +28,8 @@ data class SizeDp( val width:Dp = 0.dp, val height: Dp = 0.dp )
 
 data class BottomAxisConfig(
 
+    val gridLines: GridLines = GridLines(),
+
     val formatAxisLabel: ((Float) -> String)? = null,
     val axisColor: Color = Color.Black,
     val axisStrokeWidth: Dp = 2.dp,
@@ -67,10 +69,13 @@ data class BottomAxisConfig(
 )
 
 
+data class GridLines( var display: Boolean = true, var color: Color = Color.LightGray, var strokeWidth: Float = 1f )
 
 data class VerticalAxisConfig(
 
     val formatAxisLabel: ((Float) -> String)? = null,
+
+    val gridLines: GridLines =  GridLines(),
 
     val showCircles: Boolean = true,
 
