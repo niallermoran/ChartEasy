@@ -47,6 +47,7 @@ fun Chart() {
     Box(modifier = Modifier.padding(12.dp)) {
         Chart(
             rightAxisConfig = VerticalAxisConfig(
+                display = true,
                 type = AxisType.Bar,
                 dataPoints = points,
                 formatAxisLabel = { y ->
@@ -58,7 +59,8 @@ fun Chart() {
                 dataPoints = points,
                 formatAxisLabel = { y ->
                     String.format( locale = Locale.ENGLISH, "%.1f", y)
-                }
+                },
+                maxY = 120f
             ),
             bottomAxisConfig = BottomAxisConfig(
                 formatAxisLabel = { x->

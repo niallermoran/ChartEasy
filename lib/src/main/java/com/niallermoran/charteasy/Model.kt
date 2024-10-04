@@ -1,5 +1,6 @@
 package com.niallermoran.charteasy
 
+import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import getRandomColour
+import kotlin.math.sqrt
 
 
 data class LeftAxisArea( var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp() )
@@ -34,15 +36,63 @@ data class PlotArea(var offset: OffsetDp = OffsetDp(),
 
     val innerHeight: Dp
         get() = size.height -  padding.calculateTopPadding() - padding.calculateBottomPadding()
+
+    /**
+     * Gets the Dp offset for a chart point on the inner plot area
+     * Remember to convert to Pixels when plotting using density
+     */
+    fun getPlotAreaInnerOffsetForChartPoint( chartPoint: ChartPoint, dimensions:Dimensions ) : OffsetDp
+    {
+        val xAxisDp =  ( (chartPoint.xValue - dimensions.dataValues.xMin) / (dimensions.dataValues.xMax - dimensions.dataValues.xMin )) * innerWidth.value
+        val yAxisDp = innerHeight.value - (((chartPoint.yValue - dimensions.dataValues.yMin) / (dimensions.dataValues.yMax - dimensions.dataValues.yMin ) ) * innerHeight.value )
+
+        return OffsetDp(
+            left = xAxisDp.dp,
+            top = yAxisDp.dp
+        )
+    }
+
+    /**
+     * Based on x and y Dp values on the inner plot area canvas, find the closest chartpoint
+     */
+    fun getClosestPoint( innerPlotAreaDps: OffsetDp, dimensions: Dimensions ) : ChartPoint
+    {
+        var distanceBetweenPoints = Float.MAX_VALUE
+        var closestPoint: ChartPoint = dimensions.dataValues.points[0]
+
+        dimensions.dataValues.points.forEachIndexed { index, chartPoint ->
+
+            // gets the DP coordinates on the outer plot area for the chart point
+            val pointDp = getPlotAreaInnerOffsetForChartPoint(chartPoint, dimensions)
+
+            // calculate the distance between the the co-ordinates
+            val distanceDp  = sqrt(((innerPlotAreaDps.left - pointDp.left).value * (innerPlotAreaDps.left - pointDp.left).value)
+                    + ((innerPlotAreaDps.top - pointDp.top).value * (innerPlotAreaDps.top - pointDp.top).value))
+
+            if( distanceDp < distanceBetweenPoints )
+            {
+                distanceBetweenPoints = distanceDp
+                closestPoint = chartPoint
+            }
+        }
+
+        return closestPoint
+    }
 }
 
 
 data class AxisLabel( val text: TextLayoutResult, val centerDistanceAlongAxis: Dp )
 
-data class OffsetDp( val left:Dp = 0.dp, val top: Dp = 0.dp )
+data class OffsetDp(var left:Dp = 0.dp, var top: Dp = 0.dp )
 data class SizeDp( val width:Dp = 0.dp, val height: Dp = 0.dp )
 
 data class BottomAxisConfig(
+
+    /**
+     * Configure the cross hairs when a user taps a point on the screen
+     */
+    val crossHairsConfig: CrossHairs = CrossHairs(),
+
     val gridLines: GridLines = GridLines(),
     val formatAxisLabel: ((Float) -> String)? = null,
     val axisColor: Color = Color.LightGray,
@@ -104,7 +154,7 @@ data class VerticalAxisConfig(
     val displayLabels: Boolean = true,
 
     /**
-     * Use this value to hide or show the axis
+     * Use this value to hide or show the axis completely
      */
     val display: Boolean = true,
 
@@ -258,16 +308,13 @@ data class ChartPoint(
     val data: Any? = null,
     val pointLabel: String? = null,
     val pointLabelRightAxis: String? = null,
-    val bottomAxisLabel:String? = null
 )
 
 
 data class CrossHairs(
     val display: Boolean = true,
-    val displayCoordinates: Boolean = true,
-    val textStyle: TextStyle = TextStyle(color = Color.Black, fontSize = 10.sp),
     val lineColor: Color = Color.LightGray,
-    val lineStrokeWidth: Dp = 1.dp
+    val lineStrokeWidth: Dp = 1.dp,
 )
 
 data class Config(

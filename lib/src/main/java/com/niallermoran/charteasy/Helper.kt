@@ -276,47 +276,54 @@ private fun calculateAxisDimensions(
     }
 
     // calculate the vertical axis widths
-    var leftAxisWidth =
+    var leftAxisWidth = 0.dp
+    if( config.leftAxisConfig.display ) {
         config.leftAxisConfig.labelPadding.calculateLeftPadding(LayoutDirection.Ltr) + config.leftAxisConfig.labelPadding.calculateRightPadding(
             LayoutDirection.Ltr
         )
 
-    var rightAxisWidth =
+        if (config.leftAxisConfig.displayLabels) {
+            with(density) {
+                val labelWidth = textMeasurer.measure(
+                    yTextLeft,
+                    style = config.leftAxisConfig.labelStyle,
+                    maxLines = config.leftAxisConfig.labelMaxLines
+                ).size.width.toDp()
+
+                leftAxisWidth += labelWidth
+            }
+        }
+
+        if (config.leftAxisConfig.displayTicks) {
+            leftAxisWidth += config.leftAxisConfig.tickLength
+        }
+
+    }
+
+    var rightAxisWidth = 0.dp
+
+
+    if( config.rightAxisConfig.display ) {
         config.rightAxisConfig.labelPadding.calculateLeftPadding(LayoutDirection.Ltr) + config.rightAxisConfig.labelPadding.calculateRightPadding(
             LayoutDirection.Ltr
         )
 
-    if (config.leftAxisConfig.displayLabels) {
-        with(density) {
-            val labelWidth = textMeasurer.measure(
-                yTextLeft,
-                style = config.leftAxisConfig.labelStyle,
-                maxLines = config.leftAxisConfig.labelMaxLines
-            ).size.width.toDp()
+        if (config.rightAxisConfig.displayLabels) {
+            with(density) {
+                val labelWidth = textMeasurer.measure(
+                    yTextRight,
+                    style = config.rightAxisConfig.labelStyle,
+                    maxLines = config.rightAxisConfig.labelMaxLines
+                ).size.width.toDp()
 
-            leftAxisWidth += labelWidth
+                rightAxisWidth += labelWidth
+            }
+        }
+        if (config.rightAxisConfig.displayTicks) {
+            rightAxisWidth += config.rightAxisConfig.tickLength
         }
     }
 
-    if (config.rightAxisConfig.displayLabels) {
-        with(density) {
-            val labelWidth = textMeasurer.measure(
-                yTextRight,
-                style = config.rightAxisConfig.labelStyle,
-                maxLines = config.rightAxisConfig.labelMaxLines
-            ).size.width.toDp()
-
-            rightAxisWidth += labelWidth
-        }
-    }
-
-    if (config.leftAxisConfig.displayTicks) {
-        leftAxisWidth += config.leftAxisConfig.tickLength
-    }
-
-    if (config.rightAxisConfig.displayTicks) {
-        rightAxisWidth += config.rightAxisConfig.tickLength
-    }
 
     dimensions.chart.bottomAxisArea = BottomAxisArea(
         size = SizeDp(
