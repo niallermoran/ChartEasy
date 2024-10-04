@@ -6,7 +6,7 @@ plugins {
 apply plugin: 'maven-publish'
 
 def getVersionName = { ->
-    return "0.3"
+    return "1.0"
 }
 
 def getArtifactId = { ->
