@@ -107,14 +107,14 @@ android {
 
 dependencies {
 
-    def composeBom = platform('androidx.compose:compose-bom:2023.10.01')
+    def composeBom = platform('androidx.compose:compose-bom:2024.09.02')
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "androidx.core:core-ktx:1.12.0"
-    implementation "com.google.android.material:material:1.10.0"
-    implementation "androidx.fragment:fragment-ktx:1.6.2"
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "com.google.android.material:material:1.12.0"
+    implementation "androidx.fragment:fragment-ktx:1.8.3"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20"
 
     // Compose
@@ -127,18 +127,19 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata"
     implementation "androidx.compose.ui:ui-tooling-preview"
     implementation "androidx.compose.material:material-icons-extended"
-    implementation "androidx.activity:activity-compose:1.8.1"
+    implementation "androidx.activity:activity-compose:1.9.2"
     debugImplementation "androidx.compose.ui:ui-tooling"
 
     // Testing dependencies
     androidTestImplementation "androidx.arch.core:core-testing:2.2.0"
-    androidTestImplementation "androidx.test.espresso:espresso-contrib:3.5.1"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:3.6.1"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.6.1"
 
     // Compose testing dependencies
     androidTestImplementation "androidx.compose.ui:ui-test"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
-    debugImplementation "androidx.compose.ui:ui-test-manifest:1.5.4"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:1.7.2"
 
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
 
 }
