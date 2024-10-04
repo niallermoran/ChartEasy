@@ -182,13 +182,15 @@ private fun DrawScope.drawBarPlot(
 
             // draw point label text
             val text = axisConfig.getPointLabelText( chartPoint, rightAxis , textMeasurer)
-            drawText(
-                textLayoutResult = text,
-                topLeft = Offset(
-                    x = barCenterDistanceAlongXAxis.toPx() - (text.size.width/2),
-                    y = barTopY - text.size.height
+            if( text != null ) {
+                drawText(
+                    textLayoutResult = text,
+                    topLeft = Offset(
+                        x = barCenterDistanceAlongXAxis.toPx() - (text.size.width / 2),
+                        y = barTopY - text.size.height
+                    )
                 )
-            )
+            }
         }
     }
 }
@@ -373,19 +375,20 @@ private fun DrawScope.drawLinePlot(
             val axisConfig = if (rightAxis) config.rightAxisConfig else config.leftAxisConfig
             val text = axisConfig.getPointLabelText( point, rightAxis , textMeasurer)
 
+            if( text != null ) {
             val x =
                 (plotAreaWidth.toPx() * (point.xValue - xMin) / (xMax - xMin)) - (text.size.width / 2)
             val y =
                 plotAreaHeight.toPx() - (plotAreaHeight.toPx() * (point.yValue - yMin) / (yMax - yMin)) - ((text.size.height) * 1.5f)
 
-
-            drawText(
-                textLayoutResult = text,
-                topLeft = Offset(
-                    x = x,
-                    y = y
+                drawText(
+                    textLayoutResult = text,
+                    topLeft = Offset(
+                        x = x,
+                        y = y
+                    )
                 )
-            )
+            }
     }
 }
 

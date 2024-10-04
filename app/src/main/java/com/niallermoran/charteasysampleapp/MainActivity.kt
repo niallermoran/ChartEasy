@@ -11,10 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.niallermoran.charteasy.AxisType
+import com.niallermoran.charteasy.BottomAxisConfig
 import com.niallermoran.charteasy.Chart
 import com.niallermoran.charteasy.DataProvider
 import com.niallermoran.charteasy.VerticalAxisConfig
 import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,19 +42,31 @@ fun Chart() {
 
     val data = DataProvider()
     val points = data.points
+    val dateFormatter: SimpleDateFormat = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
 
     Box(modifier = Modifier.padding(12.dp)) {
         Chart(
             rightAxisConfig = VerticalAxisConfig(
                 type = AxisType.Bar,
                 dataPoints = points,
+                formatAxisLabel = { y ->
+                    "${String.format( locale = Locale.ENGLISH, "%.1f", y / 1000)} km"
+                }
             ),
             leftAxisConfig = VerticalAxisConfig(
                 type = AxisType.Line,
                 dataPoints = points,
+                formatAxisLabel = { y ->
+                    String.format( locale = Locale.ENGLISH, "%.1f", y)
+                }
             ),
-
+            bottomAxisConfig = BottomAxisConfig(
+                formatAxisLabel = { x->
+                    val date = Date( (x*1000).toLong() )
+                    dateFormatter.format(date)
+                }
             )
+        )
     }
 }
 

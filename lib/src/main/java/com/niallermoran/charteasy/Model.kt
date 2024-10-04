@@ -185,8 +185,6 @@ data class VerticalAxisConfig(
      */
     val showPointLabels: Boolean = true,
 
-    val formatPointLabel: ((ChartPoint) -> String)? = null,
-
     /**
      * Defines the style for point labels when formatPointLabel is defined
      */
@@ -205,25 +203,22 @@ data class VerticalAxisConfig(
     val crossHairsConfig: CrossHairs = CrossHairs()
 )
 {
-    fun getPointLabelText( chartPoint: ChartPoint, rightAxis: Boolean, textMeasurer: TextMeasurer ) : TextLayoutResult
+    fun getPointLabelText( chartPoint: ChartPoint, rightAxis: Boolean, textMeasurer: TextMeasurer ) : TextLayoutResult?
     {
-        val lambda = formatPointLabel
-        val yValue = if (rightAxis) chartPoint.yValueRightAxis else chartPoint.yValue
-        var text = if (lambda != null) lambda(
-            chartPoint
-        ) else if (rightAxis) chartPoint.labelRightAxis else chartPoint.label
+        val label = if(rightAxis) chartPoint.pointLabelRightAxis else chartPoint.pointLabel
 
-        if (text == null)
-            text = String.format(java.util.Locale.ENGLISH, "%.2f", yValue)
+        if( label != null ) {
+            val measure = textMeasurer.measure(
+                label,
+                pointLabelStyle,
+                labelOverflow,
+                maxLines = 1
+            )
 
-        val measure = textMeasurer.measure(
-            text,
-            pointLabelStyle,
-            labelOverflow,
-            maxLines = 1
-        )
+            return measure
+        }
 
-        return measure
+        return null
     }
 }
 
@@ -251,17 +246,19 @@ data class ChartConfig(
  * @param xValue the value to use for the xAxis
  * @param yValue the value to use for the left y axis
  * @param yValueRightAxis the value to use for the right y axis
- * @param labelRightAxis the text used to display along side the point on the chart for the yValueRightAxis
- * @param label the text used to display along side the point on the chart for the yValue
+ * @param pointLabelRightAxis the text used to display along side the point on the chart for the yValueRightAxis
+ * @param pointLabel the text used to display along side the point on the chart for the yValue
  * @param data is any data you want to attach to the point
+ * @param bottomAxisLabel is the label to show on the bottom X axis for this data point
  */
 data class ChartPoint(
     val xValue: Float,
     val yValue: Float,
-    val data: Any? = null,
-    val label: String? = null,
     val yValueRightAxis: Float? = null,
-    val labelRightAxis: String? = null,
+    val data: Any? = null,
+    val pointLabel: String? = null,
+    val pointLabelRightAxis: String? = null,
+    val bottomAxisLabel:String? = null
 )
 
 
