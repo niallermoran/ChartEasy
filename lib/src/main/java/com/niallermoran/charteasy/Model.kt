@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -287,6 +288,18 @@ data class ChartConfig(
      * the default is 0.5, so the space would be half the bar width
      */
     val barChartFraction: Float = 0.5f,
+
+    /**
+     * Provide a lambda to respond to user tapping the plot area
+     */
+    val onTap : ( ( chartPoint: ChartPoint ) -> Unit )? = null,
+
+    /**
+     * Provide a lambda which can be used to draw custom elements on the chart
+     * The lambda will be passed a ChartDimensions object containing all of the dimensions of the chart
+     * so you can position your custom elements correctly
+     */
+    val onDraw: (DrawScope.( chartDimension: ChartDimensions ) -> Unit)? = null
 )
 
 

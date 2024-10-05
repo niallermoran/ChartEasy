@@ -89,12 +89,32 @@ fun Chart(
             DrawPlotArea(config = config, dimensions = dimensions)
             DrawCrossHairs(config = config, dimensions = dimensions)
 
+            val lambda = config.chartConfig.onDraw
+            if( lambda != null )
+                DrawUserObjects(
+                    dimensions = dimensions,
+                    userLambda = lambda
+                )
 
         } else
             Text(text = "Not enough data", modifier = Modifier.align(Alignment.Center))
     }
 
 
+}
+
+@Composable
+private fun DrawUserObjects(  dimensions: Dimensions, userLambda: DrawScope.( chartDimension: ChartDimensions ) -> Unit)
+{
+    // create a canvas which maps to the inside plot area and
+    // provide access to the drawscope so that the user can draw custom objects
+    Canvas(modifier = Modifier
+        .width(dimensions.chart.chartSize.width)
+        .height(dimensions.chart.chartSize.height)
+    )
+    {
+        userLambda( dimensions.chart )
+    }
 }
 
 @Composable
@@ -633,8 +653,6 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
     val yOffset = dimensions.chart.plotArea.innerTopLeftOffset.top
     var modifier = Modifier.fillMaxSize()
 
-    val x = 1
-
     // the navas for the cross hairs responds to tap, so use the full plot area width (not just inner)
     modifier = modifier
         .pointerInput(Unit) {
@@ -654,6 +672,11 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
                     // get the closest point to where the user tapped
                     val point = dimensions.chart.plotArea.getClosestPoint( innerTappedDp, dimensions)
                     val pointDp = dimensions.chart.plotArea.getPlotAreaInnerOffsetForChartPoint(point, dimensions)
+
+                    // call the user's lambda if it exists
+                    val lambda = config.chartConfig.onTap
+                    if( lambda != null)
+                        lambda( point )
 
                     Log.d("crosshairs-found", "(${point.xValue},${point.yValue})")
                     Log.d("crosshairs-pointdp", "(${pointDp.left},${pointDp.top})")
