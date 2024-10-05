@@ -291,8 +291,10 @@ data class ChartConfig(
 
     /**
      * Provide a lambda to respond to user tapping the plot area
+     * @param chartPoint
+     * @param offset is the position of the point (in Dp) relative to the chart canvas top left corner
      */
-    val onTap : ( ( chartPoint: ChartPoint ) -> Unit )? = null,
+    val onTap : ( ( chartPoint: ChartPoint, offset: OffsetDp ) -> Unit )? = null,
 
     /**
      * Provide a lambda which can be used to draw custom elements on the chart
@@ -365,8 +367,26 @@ data class ChartDimensions(
     var bottomAxisArea:BottomAxisArea= BottomAxisArea(),
     var rightAxisArea:RightAxisArea = RightAxisArea(),
     var plotArea:PlotArea = PlotArea(),
-    var chartSize: SizeDp = SizeDp(0.dp, 0.dp)
+    var chartSize: SizeDp = SizeDp(0.dp, 0.dp),
+
 )
+{
+
+    /**
+     * Gets the Dp offset for a chart point relative to the top left corner of the chart area
+     * Remember to convert to Pixels when plotting using density
+     */
+    fun getChartOffsetForChartPoint( chartPoint: ChartPoint, dimensions:Dimensions ) : OffsetDp
+    {
+        val xAxisDp =  ( (chartPoint.xValue - dimensions.dataValues.xMin) / (dimensions.dataValues.xMax - dimensions.dataValues.xMin )) * chartSize.width.value
+        val yAxisDp = chartSize.height.value - (((chartPoint.yValue - dimensions.dataValues.yMin) / (dimensions.dataValues.yMax - dimensions.dataValues.yMin ) ) * chartSize.height.value )
+
+        return OffsetDp(
+            left = xAxisDp.dp + dimensions.chart.plotArea.innerTopLeftOffset.left,
+            top = yAxisDp.dp + dimensions.chart.plotArea.innerTopLeftOffset.top
+        )
+    }
+}
 
 data class DataValues(var xMin: Float = 0f, var yMin:Float = 0f, var xMax: Float = 0f, var yMax:Float = 0f, var yMinRight: Float = 0f, var yMaxRight: Float = 0f,  var points: List<ChartPoint> = ArrayList() )
 
