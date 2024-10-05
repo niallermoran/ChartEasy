@@ -30,6 +30,7 @@ import com.niallermoran.charteasy.Chart
 import com.niallermoran.charteasy.ChartConfig
 import com.niallermoran.charteasy.ChartPoint
 import com.niallermoran.charteasy.DataProvider
+import com.niallermoran.charteasy.OffsetDp
 import com.niallermoran.charteasy.VerticalAxisConfig
 import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
 import java.text.SimpleDateFormat
@@ -56,8 +57,8 @@ class MainActivity : ComponentActivity() {
                         textAlign = TextAlign.Center
                     )
                     Box(modifier = Modifier.padding(12.dp)) {
-                        Chart( onTapped = {
-                            caption = "(${it.xValue},${it.yValue})"
+                        Chart( onTapped = { point, offset ->
+                            caption = "(${point.xValue},${point.yValue}) - (${offset.left},${offset.top})"
                         })
                     }
                 }
@@ -67,7 +68,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Chart(onTapped: (point:ChartPoint) ->Unit ) {
+fun Chart(onTapped: (point:ChartPoint, chartOffset: OffsetDp) ->Unit ) {
 
     val data = DataProvider()
     val points = data.points
@@ -135,7 +136,7 @@ fun Chart(onTapped: (point:ChartPoint) ->Unit ) {
 @Composable
 fun DefaultPreview() {
     ChartEasySampleAppTheme {
-        Chart(onTapped = {
+        Chart(onTapped = { point, offset ->
 
         })
     }
