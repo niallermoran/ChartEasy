@@ -679,6 +679,11 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
                     if( lambda != null)
                         lambda( point, chartOffsetForPoint )
 
+                    // call the user's lambda if it exists
+                    val lambda = config.chartConfig.onTap
+                    if( lambda != null)
+                        lambda( point )
+
                     Log.d("crosshairs-found", "(${point.xValue},${point.yValue})")
                     Log.d("crosshairs-pointdp", "(${pointDp.left},${pointDp.top})")
                     Log.d("crosshairs-tapped", "(${innerTappedDp.left},${innerTappedDp.top})")
