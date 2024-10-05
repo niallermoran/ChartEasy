@@ -12,7 +12,7 @@ import kotlin.time.ExperimentalTime
 
 class DataProvider {
 
-    val points: List<ChartPoint>
+    val samplePoints1: List<ChartPoint>
         get() {
 
             return listOf(
@@ -23,6 +23,21 @@ class DataProvider {
                 ChartPoint(1727111643.0f, 114.92f, yValueRightAxis = 2441.08f, pointLabelRightAxis = "2.4km"),
                 ChartPoint(1727002609.0f, 116.85f,  yValueRightAxis = 4626.87f, pointLabelRightAxis = "4.6km"),
                 ChartPoint(1726557332.0f, 118.50f, yValueRightAxis = 3626.87f,) //17 sep
+            )
+
+        }
+
+    val samplePoints2: List<ChartPoint>
+        get() {
+
+            return listOf(
+                ChartPoint(1727680190.0f, 106.16f), // 30 sep
+                ChartPoint(1727613711.0f, 109.87f),
+                ChartPoint(1727514602.0f, 111.56f),
+                ChartPoint(1727461207.0f, 112.66f),
+                ChartPoint(1727111643.0f, 114.92f),
+                ChartPoint(1727002609.0f, 116.85f),
+                ChartPoint(1726557332.0f, 118.50f) //17 sep
             )
 
         }

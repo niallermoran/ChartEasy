@@ -16,6 +16,7 @@ import com.niallermoran.charteasy.PlotArea
 import com.niallermoran.charteasy.RightAxisArea
 import com.niallermoran.charteasy.SizeDp
 import com.niallermoran.charteasy.VerticalAxisConfig
+import kotlin.math.ceil
 import kotlin.random.Random
 
 /**
@@ -33,12 +34,15 @@ fun calculateDimensions(
         dimensions.chart.chartSize =
             SizeDp(width = availableWidth, height = availableHeight)
 
-        // calculate data specific dimensions
-        dimensions.dataValues.points = if (config.leftAxisConfig.type == AxisType.Bar) config.leftAxisConfig.dataPoints else config.leftAxisConfig.dataPoints.sortedBy { it.xValue } //.sortedBy { it.xValue }
+        val points = if (config.leftAxisConfig.type == AxisType.Bar) config.leftAxisConfig.dataPoints else config.leftAxisConfig.dataPoints.sortedBy { it.xValue }
+        val pointsWithRightValue = points.filter { it.yValueRightAxis != null }
+
+    // calculate data specific dimensions
+        dimensions.dataValues.points =  points
         dimensions.dataValues.yMin = config.leftAxisConfig.minY ?: dimensions.dataValues.points.minOf { it.yValue }
         dimensions.dataValues.yMax = config.leftAxisConfig.maxY ?: dimensions.dataValues.points.maxOf { it.yValue }
-        dimensions.dataValues.yMinRight = config.rightAxisConfig.minY ?: dimensions.dataValues.points.filter { it.yValueRightAxis != null }.minOf { it.yValueRightAxis!!  }
-        dimensions.dataValues.yMaxRight = config.rightAxisConfig.maxY ?: dimensions.dataValues.points.filter { it.yValueRightAxis != null }.maxOf { it.yValueRightAxis!!  }
+        dimensions.dataValues.yMinRight = config.rightAxisConfig?.minY ?: if( pointsWithRightValue.isEmpty() ) 0f else dimensions.dataValues.points.filter { it.yValueRightAxis != null }.minOf { it.yValueRightAxis!!  }
+        dimensions.dataValues.yMaxRight = config.rightAxisConfig?.maxY ?: if( pointsWithRightValue.isEmpty() ) 0f else dimensions.dataValues.points.filter { it.yValueRightAxis != null }.maxOf { it.yValueRightAxis!!  }
         dimensions.dataValues.xMin = dimensions.dataValues.points.minOf { it.xValue }
         dimensions.dataValues.xMax = dimensions.dataValues.points.maxOf { it.xValue }
 
@@ -81,10 +85,11 @@ private fun calculateLabels(
     // get left axis labels/ticks
     if (config.leftAxisConfig.displayLabels || config.leftAxisConfig.displayTicks) {
 
-        val axisConfig= config.leftAxisConfig
+        val axisConfig = config.leftAxisConfig
         val formatter = axisConfig.formatAxisLabel
-        val labelCount = if (axisConfig.maxNumberOfLabelsToDisplay == null || axisConfig.maxNumberOfLabelsToDisplay > points.size) points.size else axisConfig.maxNumberOfLabelsToDisplay
-        val distanceBetweenTicks = dimensions.chart.plotArea.innerHeight/(labelCount-1)
+        val labelCount =
+            if (axisConfig.maxNumberOfLabelsToDisplay == null || axisConfig.maxNumberOfLabelsToDisplay > points.size) points.size else axisConfig.maxNumberOfLabelsToDisplay
+        val distanceBetweenTicks = dimensions.chart.plotArea.innerHeight / (labelCount - 1)
 
         // add tick and label dimensions
         for (i: Int in 0..<labelCount) {
@@ -92,7 +97,8 @@ private fun calculateLabels(
             val distanceAlongYAxis = i.dp * distanceBetweenTicks.value
 
             // get the value of x that would be represented by the label
-            val yValue = dimensions.dataValues.yMin + ((dimensions.dataValues.yMax - dimensions.dataValues.yMin) * i / (labelCount-1))
+            val yValue =
+                dimensions.dataValues.yMin + ((dimensions.dataValues.yMax - dimensions.dataValues.yMin) * i / (labelCount - 1))
 
             val labelText = if (formatter == null) String.format(
                 java.util.Locale.ENGLISH,
@@ -107,75 +113,95 @@ private fun calculateLabels(
         }
     }
 
-    // get left axis labels/ticks
-    if (config.rightAxisConfig.displayLabels || config.rightAxisConfig.displayTicks) {
+    // get right axis labels/ticks
+    if (config.rightAxisConfig != null && (config.rightAxisConfig.displayLabels || config.rightAxisConfig.displayTicks)) {
 
-        val axisConfig= config.rightAxisConfig
-        val formatter = axisConfig.formatAxisLabel
-        val labelCount = if (axisConfig.maxNumberOfLabelsToDisplay == null || axisConfig.maxNumberOfLabelsToDisplay > points.size) points.size else axisConfig.maxNumberOfLabelsToDisplay
-        val distanceBetweenTicks = dimensions.chart.plotArea.innerHeight/(labelCount-1)
+        val axisConfig = config.rightAxisConfig
+            val formatter = axisConfig.formatAxisLabel
+            val labelCount =
+                if (axisConfig.maxNumberOfLabelsToDisplay == null || axisConfig.maxNumberOfLabelsToDisplay > points.size) points.size else axisConfig.maxNumberOfLabelsToDisplay
+            val distanceBetweenTicks = dimensions.chart.plotArea.innerHeight / (labelCount - 1)
 
-        // add tick and label dimensions
-        for (i: Int in 0..<labelCount) {
+            // add tick and label dimensions
+            for (i: Int in 0..<labelCount) {
 
-            val distanceAlongYAxis = i.dp * distanceBetweenTicks.value
+                val distanceAlongYAxis = i.dp * distanceBetweenTicks.value
 
-            // get the value of x that would be represented by the label
-            val yValue = dimensions.dataValues.yMinRight + ((dimensions.dataValues.yMaxRight - dimensions.dataValues.yMinRight) * i / (labelCount-1))
+                // get the value of x that would be represented by the label
+                val yValue =
+                    dimensions.dataValues.yMinRight + ((dimensions.dataValues.yMaxRight - dimensions.dataValues.yMinRight) * i / (labelCount - 1))
 
-            val labelText = if (formatter == null) String.format(
-                java.util.Locale.ENGLISH,
-                "%.2f",
-                yValue
-            ) else formatter(yValue)
+                val labelText = if (formatter == null) String.format(
+                    java.util.Locale.ENGLISH,
+                    "%.2f",
+                    yValue
+                ) else formatter(yValue)
 
-            val textMeasure = textMeasurer.measure(labelText, style = axisConfig.labelStyle)
-            val label = AxisLabel(text = textMeasure, distanceAlongYAxis)
+                val textMeasure = textMeasurer.measure(labelText, style = axisConfig.labelStyle)
+                val label = AxisLabel(text = textMeasure, distanceAlongYAxis)
 
-            dimensions.rightAxisLabels.add(label)
-        }
+                dimensions.rightAxisLabels.add(label)
+            }
+
     }
 
 
     // get bottom axis labels/ticks
-    if (config.bottomAxisConfig.displayLabels || config.bottomAxisConfig.displayTicks) {
+    if (config.bottomAxisConfig.displayLabels || config.bottomAxisConfig.displayTicks)
+    {
 
         val bottomAxisFormatter = config.bottomAxisConfig.formatAxisLabel
-        val bottomAxisLabelCount = if (config.bottomAxisConfig.maxNumberOfLabelsToDisplay == null
-            || config.bottomAxisConfig.maxNumberOfLabelsToDisplay > points.size) points.size
+        val bottomAxisLabelCount =
+            if (config.bottomAxisConfig.maxNumberOfLabelsToDisplay > points.size
+            ) points.size
             else config.bottomAxisConfig.maxNumberOfLabelsToDisplay
 
-        val distanceBetweenTicks = dimensions.chart.plotArea.innerWidth/(bottomAxisLabelCount-1)
+        val distanceBetweenTicks =
+            dimensions.chart.plotArea.innerWidth / (bottomAxisLabelCount - 1)
 
         // if either vertical axis is a bar chart then the ticks and labels must
         // align with actual x values whereas for line charts the x-values can be equally dispersed
-        if( config.leftAxisConfig.type ==AxisType.Bar || config.rightAxisConfig.type == AxisType.Bar)
-        {
+        if (config.leftAxisConfig.type == AxisType.Bar || ( config.rightAxisConfig != null && config.rightAxisConfig.type == AxisType.Bar) ) {
             // for bar chart each point gets a label as long as we don;t go over the max
             // each point gets a tick
             points.forEachIndexed { index, chartPoint ->
 
-                val distanceAlongXAxis = index.dp * distanceBetweenTicks.value
-                val labelText = if (bottomAxisFormatter == null) String.format(
-                    java.util.Locale.ENGLISH,
-                    "%.2f",
-                    chartPoint.xValue
-                ) else bottomAxisFormatter(chartPoint.xValue)
-                val textMeasure = textMeasurer.measure(labelText, style = config.bottomAxisConfig.labelStyle)
-                dimensions.bottomAxisLabels.add(AxisLabel(
-                    text = textMeasure,
-                    centerDistanceAlongAxis = distanceAlongXAxis
-                ))
+                // we can only show up to maxLabelsToDisplay, but we will alwyas show first and last
+                var showLabel = if( index == 0 || index == dimensions.dataValues.points.size - 1) true else false
+
+                // calculate how many labels should be displayed for every data point
+                val skip = if( config.bottomAxisConfig.maxNumberOfLabelsToDisplay >= dimensions.dataValues.points.size) 1
+                else ceil( dimensions.dataValues.points.size.toDouble() / config.bottomAxisConfig.maxNumberOfLabelsToDisplay ).toInt()
+
+                if ( index % skip == 0 && config.bottomAxisConfig.maxNumberOfLabelsToDisplay != 2)
+                    showLabel = true
+
+                if( showLabel == true) {
+                    val distanceAlongXAxis = index.dp * distanceBetweenTicks.value
+                    val labelText = if (bottomAxisFormatter == null) String.format(
+                        java.util.Locale.ENGLISH,
+                        "%.2f",
+                        chartPoint.xValue
+                    ) else bottomAxisFormatter(chartPoint.xValue)
+                    val textMeasure =
+                        textMeasurer.measure(labelText, style = config.bottomAxisConfig.labelStyle)
+                    dimensions.bottomAxisLabels.add(
+                        AxisLabel(
+                            text = textMeasure,
+                            centerDistanceAlongAxis = distanceAlongXAxis
+                        )
+                    )
+                }
             }
-        }
-        else {
+        } else {
             // for lines the bottom axis labels represent values equally divided amongst width
-            for (i: Int in 0..< bottomAxisLabelCount) {
+            for (i: Int in 0..<bottomAxisLabelCount) {
 
                 val distanceAlongXAxis = i.dp * distanceBetweenTicks.value
 
                 // get the value of x that would be represented by the label
-                val xValue = dimensions.dataValues.xMin + ((dimensions.dataValues.xMax - dimensions.dataValues.xMin) * i / (bottomAxisLabelCount-1))
+                val xValue =
+                    dimensions.dataValues.xMin + ((dimensions.dataValues.xMax - dimensions.dataValues.xMin) * i / (bottomAxisLabelCount - 1))
 
                 val labelText = if (bottomAxisFormatter == null) String.format(
                     java.util.Locale.ENGLISH,
@@ -183,7 +209,8 @@ private fun calculateLabels(
                     xValue
                 ) else bottomAxisFormatter(xValue)
 
-                val textMeasure = textMeasurer.measure(labelText, style = config.bottomAxisConfig.labelStyle)
+                val textMeasure =
+                    textMeasurer.measure(labelText, style = config.bottomAxisConfig.labelStyle)
                 val label = AxisLabel(text = textMeasure, distanceAlongXAxis)
                 dimensions.bottomAxisLabels.add(label)
             }
@@ -241,7 +268,7 @@ private fun calculateAxisDimensions(
     textMeasurer: TextMeasurer
 ) {
     val formatLeftAxisLabelLambda = config.leftAxisConfig.formatAxisLabel
-    val formatRightAxisLabelLambda = config.rightAxisConfig.formatAxisLabel
+    val formatRightAxisLabelLambda =  config.rightAxisConfig?.formatAxisLabel
     val formatBottomAxisLabelLambda = config.bottomAxisConfig.formatAxisLabel
 
     val yTextLeft = if (formatLeftAxisLabelLambda != null) formatLeftAxisLabelLambda(
@@ -303,7 +330,7 @@ private fun calculateAxisDimensions(
     var rightAxisWidth = 0.dp
 
 
-    if( config.rightAxisConfig.display ) {
+    if( config.rightAxisConfig != null && config.rightAxisConfig.display ) {
         config.rightAxisConfig.labelPadding.calculateLeftPadding(LayoutDirection.Ltr) + config.rightAxisConfig.labelPadding.calculateRightPadding(
             LayoutDirection.Ltr
         )
@@ -361,7 +388,7 @@ private fun calculateAxisDimensions(
 
 
     // calculate bar widths for left and/or right axis
-    if (config.leftAxisConfig.type == AxisType.Bar || config.rightAxisConfig.type == AxisType.Bar) {
+    if (config.leftAxisConfig.type == AxisType.Bar || config.rightAxisConfig?.type == AxisType.Bar) {
 
         // calculate the bar width allowing for half a width padding at start and right
         val numberOfBars = dimensions.dataValues.points.size

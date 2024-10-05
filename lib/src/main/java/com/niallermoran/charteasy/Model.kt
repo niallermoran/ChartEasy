@@ -336,7 +336,7 @@ data class Config(
     val chartConfig: ChartConfig = ChartConfig(),
     val leftAxisConfig: VerticalAxisConfig = VerticalAxisConfig(),
     val bottomAxisConfig: BottomAxisConfig = BottomAxisConfig(),
-    val rightAxisConfig: VerticalAxisConfig = VerticalAxisConfig(),
+    val rightAxisConfig: VerticalAxisConfig? = null,
 
     )
 

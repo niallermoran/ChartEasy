@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
 fun Chart(onTapped: (point:ChartPoint, chartOffset: OffsetDp) ->Unit ) {
 
     val data = DataProvider()
-    val points = data.points
+    val points = data.samplePoints2
     val dateFormatter: SimpleDateFormat = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
 
     Box(modifier = Modifier.padding(12.dp)) {
@@ -106,23 +106,18 @@ fun Chart(onTapped: (point:ChartPoint, chartOffset: OffsetDp) ->Unit ) {
 
                 }
             ),
-            rightAxisConfig = VerticalAxisConfig(
-                display = true,
-                type = AxisType.Bar,
-                dataPoints = points,
-                formatAxisLabel = { y ->
-                    "${String.format( locale = Locale.ENGLISH, "%.1f", y / 1000)} km"
-                }
-            ),
             leftAxisConfig = VerticalAxisConfig(
-                type = AxisType.Line,
+                type = AxisType.Bar,
                 dataPoints = points,
                 formatAxisLabel = { y ->
                     String.format( locale = Locale.ENGLISH, "%.1f", y)
                 },
-                maxY = 120f
+                maxY = 120f,
+                maxNumberOfLabelsToDisplay = 3,
+                minY = 100f
             ),
             bottomAxisConfig = BottomAxisConfig(
+                maxNumberOfLabelsToDisplay = 5,
                 formatAxisLabel = { x->
                     val date = Date( (x*1000).toLong() )
                     dateFormatter.format(date)
