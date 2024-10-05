@@ -16,13 +16,13 @@ class DataProvider {
         get() {
 
             return listOf(
-                ChartPoint(1727680190.0f, 106.15888928842716f, yValueRightAxis = 1076.06f, pointLabelRightAxis = "1km"), // 30 sep
-                ChartPoint(1727613711.0f, 109.87542523490303f,  yValueRightAxis = 2217.55f, pointLabelRightAxis = "2.2km"),
-                ChartPoint(1727514602.0f, 111.566732567526f,  yValueRightAxis = 1981.097f, pointLabelRightAxis = "2km"),
-                ChartPoint(1727461207.0f, 112.66887205564919f,  yValueRightAxis = 873.56f, pointLabelRightAxis = ".9km"),
-                ChartPoint(1727111643.0f, 114.92946548369882f, yValueRightAxis = 2441.08f, pointLabelRightAxis = "2.4km"),
-                ChartPoint(1727002609.0f, 116.85154599391255f,  yValueRightAxis = 4626.87f, pointLabelRightAxis = "4.6km"),
-                ChartPoint(1726557332.0f, 118.50448343984388f, yValueRightAxis = 3626.87f,) //17 sep
+                ChartPoint(1727680190.0f, 106.16f, yValueRightAxis = 1076.06f, pointLabelRightAxis = "1km"), // 30 sep
+                ChartPoint(1727613711.0f, 109.87f,  yValueRightAxis = 2217.55f, pointLabelRightAxis = "2.2km"),
+                ChartPoint(1727514602.0f, 111.56f,  yValueRightAxis = 1981.097f, pointLabelRightAxis = "2km"),
+                ChartPoint(1727461207.0f, 112.66f,  yValueRightAxis = 873.56f, pointLabelRightAxis = ".9km"),
+                ChartPoint(1727111643.0f, 114.92f, yValueRightAxis = 2441.08f, pointLabelRightAxis = "2.4km"),
+                ChartPoint(1727002609.0f, 116.85f,  yValueRightAxis = 4626.87f, pointLabelRightAxis = "4.6km"),
+                ChartPoint(1726557332.0f, 118.50f, yValueRightAxis = 3626.87f,) //17 sep
             )
 
         }

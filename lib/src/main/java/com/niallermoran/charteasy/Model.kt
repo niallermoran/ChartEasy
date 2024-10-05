@@ -287,6 +287,11 @@ data class ChartConfig(
      * the default is 0.5, so the space would be half the bar width
      */
     val barChartFraction: Float = 0.5f,
+
+    /**
+     * Provide a lambda to respond to user tapping the plot area
+     */
+    val onTap : ( ( chartPoint: ChartPoint ) -> Unit )? = null
 )
 
 

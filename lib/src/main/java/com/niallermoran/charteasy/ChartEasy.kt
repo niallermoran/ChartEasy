@@ -633,8 +633,6 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
     val yOffset = dimensions.chart.plotArea.innerTopLeftOffset.top
     var modifier = Modifier.fillMaxSize()
 
-    val x = 1
-
     // the navas for the cross hairs responds to tap, so use the full plot area width (not just inner)
     modifier = modifier
         .pointerInput(Unit) {
@@ -654,6 +652,11 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
                     // get the closest point to where the user tapped
                     val point = dimensions.chart.plotArea.getClosestPoint( innerTappedDp, dimensions)
                     val pointDp = dimensions.chart.plotArea.getPlotAreaInnerOffsetForChartPoint(point, dimensions)
+
+                    // call the user's lambda if it exists
+                    val lambda = config.chartConfig.onTap
+                    if( lambda != null)
+                        lambda( point )
 
                     Log.d("crosshairs-found", "(${point.xValue},${point.yValue})")
                     Log.d("crosshairs-pointdp", "(${pointDp.left},${pointDp.top})")

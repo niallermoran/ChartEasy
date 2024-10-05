@@ -4,15 +4,25 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.niallermoran.charteasy.AxisType
 import com.niallermoran.charteasy.BottomAxisConfig
 import com.niallermoran.charteasy.Chart
+import com.niallermoran.charteasy.ChartConfig
+import com.niallermoran.charteasy.ChartPoint
 import com.niallermoran.charteasy.DataProvider
 import com.niallermoran.charteasy.VerticalAxisConfig
 import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
@@ -26,11 +36,24 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ChartEasySampleAppTheme {
+
+                var caption by rememberSaveable { mutableStateOf("Tap chart area") }
+
                 // A surface container using the 'background' color from the theme
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(12.dp )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
                 ) {
-                   Chart()
+                    Text( modifier = Modifier.padding(6.dp)
+                        .fillMaxWidth(),
+                        text = caption,
+                        textAlign = TextAlign.Center
+                    )
+                    Box(modifier = Modifier.padding(12.dp)) {
+                        Chart( onTapped = {
+                            caption = "(${it.xValue},${it.yValue})"
+                        })
+                    }
                 }
             }
         }
@@ -38,7 +61,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Chart() {
+fun Chart(onTapped: (point:ChartPoint) ->Unit ) {
 
     val data = DataProvider()
     val points = data.points
@@ -46,6 +69,9 @@ fun Chart() {
 
     Box(modifier = Modifier.padding(12.dp)) {
         Chart(
+            chartConfig = ChartConfig(
+                onTap = onTapped
+            ),
             rightAxisConfig = VerticalAxisConfig(
                 display = true,
                 type = AxisType.Bar,
@@ -76,6 +102,8 @@ fun Chart() {
 @Composable
 fun DefaultPreview() {
     ChartEasySampleAppTheme {
-        Chart()
+        Chart(onTapped = {
+
+        })
     }
 }
