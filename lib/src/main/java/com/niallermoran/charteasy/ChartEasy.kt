@@ -89,12 +89,32 @@ fun Chart(
             DrawPlotArea(config = config, dimensions = dimensions)
             DrawCrossHairs(config = config, dimensions = dimensions)
 
+            val lambda = config.chartConfig.onDraw
+            if( lambda != null )
+                DrawUserObjects(
+                    dimensions = dimensions,
+                    userLambda = lambda
+                )
 
         } else
             Text(text = "Not enough data", modifier = Modifier.align(Alignment.Center))
     }
 
 
+}
+
+@Composable
+private fun DrawUserObjects(  dimensions: Dimensions, userLambda: DrawScope.( chartDimension: ChartDimensions ) -> Unit)
+{
+    // create a canvas which maps to the inside plot area and
+    // provide access to the drawscope so that the user can draw custom objects
+    Canvas(modifier = Modifier
+        .width(dimensions.chart.chartSize.width)
+        .height(dimensions.chart.chartSize.height)
+    )
+    {
+        userLambda( dimensions.chart )
+    }
 }
 
 @Composable

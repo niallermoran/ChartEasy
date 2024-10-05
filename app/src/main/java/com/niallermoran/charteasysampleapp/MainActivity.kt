@@ -15,6 +15,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -70,7 +76,34 @@ fun Chart(onTapped: (point:ChartPoint) ->Unit ) {
     Box(modifier = Modifier.padding(12.dp)) {
         Chart(
             chartConfig = ChartConfig(
-                onTap = onTapped
+                onTap = onTapped,
+                onDraw = { dimensions ->
+
+                    // draw a box with some semi-transparent background
+                    val path = Path()
+                    path.moveTo( 0f, 0f )
+                    path.lineTo( size.height, size.width)
+
+                    drawRect(
+                        topLeft = Offset(
+                            x = dimensions.plotArea.offset.left.toPx(),
+                            y = dimensions.plotArea.innerHeight.toPx() * 3 / 8
+                        ),
+                        size = Size(
+                            width = dimensions.plotArea.size.width.toPx(),
+                            height = dimensions.plotArea.innerHeight.toPx()/4
+                        ),
+                        color = Color(
+                            red = 0f,
+                            green = 0f,
+                            blue = 0f,
+                            alpha = .1f
+                        ),
+                        style = Fill
+                    )
+
+
+                }
             ),
             rightAxisConfig = VerticalAxisConfig(
                 display = true,
