@@ -5,41 +5,34 @@ import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Surface
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.CacheDrawScope
-import androidx.compose.ui.draw.DrawResult
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.*
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
 import calculateDimensions
-import com.google.android.material.transition.MaterialSharedAxis.Axis
-import java.util.Hashtable
-import java.util.Locale
-import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.sqrt
 
 
 /**
@@ -162,24 +155,16 @@ private fun DrawScope.drawBarPlot(
 ) {
     // x,y values
     val points = dimensions.dataValues.points
-    val xMin = dimensions.dataValues.xMin
     val yMin = if (rightAxis) dimensions.dataValues.yMinRight else dimensions.dataValues.yMin
-    val xMax = dimensions.dataValues.xMax
     val yMax = if (rightAxis) dimensions.dataValues.yMaxRight else dimensions.dataValues.yMax
 
     val plotAreaWidth = dimensions.chart.plotArea.innerWidth
     val plotAreaHeight = dimensions.chart.plotArea.innerHeight
-
-    val lineColor =
-        if (rightAxis) config.rightAxisConfig.lineColor else config.leftAxisConfig.lineColor
-
     val spaceBetweenBarCenters = plotAreaWidth / (points.size - 1)
     points.forEachIndexed { index, chartPoint ->
         val barCenterDistanceAlongXAxis = spaceBetweenBarCenters * (index)
         val barWidth = dimensions.chart.plotArea.barWidth
         val yValue = if (rightAxis) chartPoint.yValueRightAxis else chartPoint.yValue
-        val xValue = chartPoint.xValue
-
         if (yValue != null) {
             val barLeftX = (barCenterDistanceAlongXAxis - barWidth / 2).toPx()
             val barRightX = (barCenterDistanceAlongXAxis + barWidth / 2).toPx()
@@ -587,7 +572,6 @@ private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
             .offset(x = topLeftOffset.left, topLeftOffset.top)
     ) {
 
-        val widthPx = size.width
         val heightPx = size.height
 
         // draw axis line
@@ -646,7 +630,6 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
 
     var verticalCrossHairXPixels by rememberSaveable { mutableStateOf(0f) }
     var horizontalCrossHairYPixels by rememberSaveable { mutableStateOf(0f) }
-    var horizontalCrossHairYRightAxisPixels by rememberSaveable { mutableStateOf(0f) }
 
     // get offsets to inner ploat area
     val xOffset = dimensions.chart.plotArea.innerTopLeftOffset.left
@@ -678,16 +661,6 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
                     val lambda = config.chartConfig.onTap
                     if( lambda != null)
                         lambda( point, chartOffsetForPoint )
-
-                    // call the user's lambda if it exists
-                    val lambda = config.chartConfig.onTap
-                    if( lambda != null)
-                        lambda( point )
-
-                    Log.d("crosshairs-found", "(${point.xValue},${point.yValue})")
-                    Log.d("crosshairs-pointdp", "(${pointDp.left},${pointDp.top})")
-                    Log.d("crosshairs-tapped", "(${innerTappedDp.left},${innerTappedDp.top})")
-                    //  Log.d("TappedPixels", "(${pixels.left},${pixels.top})")
 
                     // reposition cross hairs, accounting for padding
                     horizontalCrossHairYPixels = pointDp.top.toPx() + yOffset.toPx()
