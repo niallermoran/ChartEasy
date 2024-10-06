@@ -33,7 +33,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import calculateDimensions
-import kotlin.math.ceil
 
 
 /**
@@ -76,7 +75,7 @@ fun Chart(
             if (config.leftAxisConfig.display)
                 DrawLeftAxisArea(config = config, dimensions = dimensions)
 
-            if ( rightAxisConfig != null && rightAxisConfig.display)
+            if (rightAxisConfig != null && rightAxisConfig.display)
                 DrawRightAxisArea(config = config, dimensions = dimensions)
 
             DrawBottomAxisArea(config = config, dimensions = dimensions)
@@ -84,7 +83,7 @@ fun Chart(
             DrawCrossHairs(config = config, dimensions = dimensions)
 
             val lambda = config.chartConfig.onDraw
-            if( lambda != null )
+            if (lambda != null)
                 DrawUserObjects(
                     dimensions = dimensions,
                     userLambda = lambda
@@ -98,16 +97,19 @@ fun Chart(
 }
 
 @Composable
-private fun DrawUserObjects(  dimensions: Dimensions, userLambda: DrawScope.( chartDimension: ChartDimensions ) -> Unit)
-{
+private fun DrawUserObjects(
+    dimensions: Dimensions,
+    userLambda: DrawScope.(chartDimension: ChartDimensions) -> Unit
+) {
     // create a canvas which maps to the inside plot area and
     // provide access to the drawscope so that the user can draw custom objects
-    Canvas(modifier = Modifier
-        .width(dimensions.chart.chartSize.width)
-        .height(dimensions.chart.chartSize.height)
+    Canvas(
+        modifier = Modifier
+            .width(dimensions.chart.chartSize.width)
+            .height(dimensions.chart.chartSize.height)
     )
     {
-        userLambda( dimensions.chart )
+        userLambda(dimensions.chart)
     }
 }
 
@@ -136,7 +138,7 @@ private fun DrawPlotArea(config: Config, dimensions: Dimensions) {
                 drawBarPlot(config, dimensions, false, textMeasurer)
         }
 
-        if ( config.rightAxisConfig != null && config.rightAxisConfig.display) {
+        if (config.rightAxisConfig != null && config.rightAxisConfig.display) {
             if (config.rightAxisConfig.type == AxisType.Line)
                 drawLinePlot(config, dimensions, true, textMeasurer)
 
@@ -155,9 +157,9 @@ private fun DrawScope.drawBarPlot(
 ) {
     val leftAxisConfig = config.leftAxisConfig
     val rightAxisConfig = config.rightAxisConfig
-    val axisConfig = if(rightAxis) rightAxisConfig else leftAxisConfig
+    val axisConfig = if (rightAxis) rightAxisConfig else leftAxisConfig
 
-    if( axisConfig != null  ) {
+    if (axisConfig != null) {
         // x,y values
         val points = dimensions.dataValues.points
         val yMin = if (rightAxis) dimensions.dataValues.yMinRight else dimensions.dataValues.yMin
@@ -229,9 +231,9 @@ private fun DrawScope.drawLinePlot(
     val xMax = dimensions.dataValues.xMax
     val yMax = if (rightAxis) dimensions.dataValues.yMaxRight else dimensions.dataValues.yMax
 
-    val axisConfig = if( !rightAxis ) config.leftAxisConfig else config.rightAxisConfig
+    val axisConfig = if (!rightAxis) config.leftAxisConfig else config.rightAxisConfig
 
-    if( axisConfig != null ) {
+    if (axisConfig != null) {
         // x,y pixel points
 
         val linePoints = ArrayList<PointF>(points.size)
@@ -256,7 +258,7 @@ private fun DrawScope.drawLinePlot(
         val splinePoints2 = ArrayList<PointF>()
         // splinePoints1.add(PointF(linePoints[0].x, linePoints[0].y))
 
-        points.forEachIndexed { index, chartPoint ->
+        points.forEachIndexed { index, _ ->
             val i = index + 1
             if (i < linePoints.size) {
                 splinePoints1.add(
@@ -294,7 +296,7 @@ private fun DrawScope.drawLinePlot(
             pathSpline.moveTo(linePoints.first().x, linePoints.first().y)
 
             //for (i in 1 until linePoints.size)
-            linePoints.forEachIndexed { i, linePoint ->
+            linePoints.forEachIndexed { i, _ ->
                 if (i > 0) {
                     pathSpline.cubicTo(
                         splinePoints1[i - 1].x, splinePoints1[i - 1].y,
@@ -314,7 +316,7 @@ private fun DrawScope.drawLinePlot(
                 plotAreaWidth.toPx(),
                 plotAreaHeight.toPx()
             )
-        } else if(linePoints.isNotEmpty()) {
+        } else if (linePoints.isNotEmpty()) {
             pathLine.moveTo(linePoints.first().x, linePoints.first().y)
 
             linePoints.forEach { pointF ->
@@ -458,22 +460,22 @@ private fun DrawBottomAxisArea(config: Config, dimensions: Dimensions) {
                 ).toPx()
 
 
-                drawLine(
-                    color = config.bottomAxisConfig.tickColor,
-                    start = Offset(pxTick, 0f),
-                    end = Offset(
-                        x = pxTick,
-                        y = config.bottomAxisConfig.tickLength.toPx()
-                    )
+            drawLine(
+                color = config.bottomAxisConfig.tickColor,
+                start = Offset(pxTick, 0f),
+                end = Offset(
+                    x = pxTick,
+                    y = config.bottomAxisConfig.tickLength.toPx()
                 )
-                drawText(
-                    textLayoutResult = label.text,
-                    topLeft = Offset(
-                        x = pxTick - (label.text.size.width / 2),
-                        y = config.bottomAxisConfig.tickLength.toPx() + config.bottomAxisConfig.labelPadding.calculateTopPadding()
-                            .toPx()
-                    )
+            )
+            drawText(
+                textLayoutResult = label.text,
+                topLeft = Offset(
+                    x = pxTick - (label.text.size.width / 2),
+                    y = config.bottomAxisConfig.tickLength.toPx() + config.bottomAxisConfig.labelPadding.calculateTopPadding()
+                        .toPx()
                 )
+            )
 
 
             if (gridLines.display) {
@@ -567,7 +569,7 @@ private fun DrawLeftAxisArea(config: Config, dimensions: Dimensions) {
 private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
 
     val axisConfig = config.rightAxisConfig
-    if( axisConfig != null ) {
+    if (axisConfig != null) {
 
         val topLeftOffset =
             OffsetDp(
@@ -642,8 +644,10 @@ private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
 @Composable
 private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
 
-    var verticalCrossHairXPixels by rememberSaveable { mutableStateOf(0f) }
-    var horizontalCrossHairYPixels by rememberSaveable { mutableStateOf(0f) }
+    var verticalCrossHairXPixels by rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) }
+    var horizontalCrossHairYPixels by rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) }
+    var horizontalCrossHairYPixelsRight by rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) }
+
 
     // get offsets to inner ploat area
     val xOffset = dimensions.chart.plotArea.innerTopLeftOffset.left
@@ -651,10 +655,10 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
     var modifier = Modifier.fillMaxSize()
 
     // the navas for the cross hairs responds to tap, so use the full plot area width (not just inner)
-    if(config.leftAxisConfig.crossHairsConfig.display
+    if (config.leftAxisConfig.crossHairsConfig.display
         || (config.rightAxisConfig != null && config.rightAxisConfig.crossHairsConfig.display)
         || config.bottomAxisConfig.crossHairsConfig.display || config.chartConfig.onTap != null
-        ) {
+    ) {
         modifier = modifier
             .pointerInput(Unit) {
                 detectTapGestures(
@@ -671,25 +675,18 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
                         if (innerTappedDp.top.value < 0f) innerTappedDp.top = 0.dp
 
                         // get the closest point to where the user tapped
-                        val point =
-                            dimensions.chart.plotArea.getClosestPoint(innerTappedDp, dimensions)
-                        val pointDp = dimensions.chart.plotArea.getPlotAreaInnerOffsetForChartPoint(
-                            point,
-                            dimensions
-                        )
-                        val chartOffsetForPoint = dimensions.chart.getChartOffsetForChartPoint(
-                            chartPoint = point,
-                            dimensions = dimensions
-                        )
+                        val point = dimensions.getClosestChartPointToCoordinate(innerTappedDp)
 
                         // call the user's lambda if it exists
                         val lambda = config.chartConfig.onTap
                         if (lambda != null)
-                            lambda(point, chartOffsetForPoint)
+                            lambda(point)
 
                         // reposition cross hairs, accounting for padding
-                        horizontalCrossHairYPixels = pointDp.top.toPx() + yOffset.toPx()
-                        verticalCrossHairXPixels = pointDp.left.toPx() + xOffset.toPx()
+                        horizontalCrossHairYPixels = point.offsetLeft.top.toPx()
+                        if( point.offsetRight != null)
+                            horizontalCrossHairYPixelsRight = point.offsetRight.top.toPx()
+                        verticalCrossHairXPixels = point.offsetLeft.left.toPx() + xOffset.toPx()
 
                     }
                 )
@@ -709,13 +706,24 @@ private fun DrawCrossHairs(config: Config, dimensions: Dimensions) {
             )
         }
 
-        // draw horizontal line
+        // draw horizontal line for left point
         if (config.leftAxisConfig.crossHairsConfig.display && (verticalCrossHairXPixels + horizontalCrossHairYPixels) > 0f) {
             drawLine(
-                color = config.bottomAxisConfig.crossHairsConfig.lineColor,
-                strokeWidth = config.bottomAxisConfig.crossHairsConfig.lineStrokeWidth.toPx(),
+                color = config.leftAxisConfig.crossHairsConfig.lineColor,
+                strokeWidth = config.leftAxisConfig.crossHairsConfig.lineStrokeWidth.toPx(),
                 start = Offset(0f, horizontalCrossHairYPixels),
-                end = Offset(size.width,  horizontalCrossHairYPixels)
+                end = Offset(size.width, horizontalCrossHairYPixels)
+            )
+        }
+
+        // draw horizontal line for right point
+        val rightConfig = config.rightAxisConfig
+        if ( rightConfig != null && rightConfig.crossHairsConfig.display && (verticalCrossHairXPixels + horizontalCrossHairYPixelsRight) > 0f) {
+            drawLine(
+                color = rightConfig.crossHairsConfig.lineColor,
+                strokeWidth = rightConfig.crossHairsConfig.lineStrokeWidth.toPx(),
+                start = Offset(0f, horizontalCrossHairYPixelsRight),
+                end = Offset(size.width, horizontalCrossHairYPixelsRight)
             )
         }
     }

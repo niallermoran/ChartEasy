@@ -29,6 +29,8 @@ import com.niallermoran.charteasy.BottomAxisConfig
 import com.niallermoran.charteasy.Chart
 import com.niallermoran.charteasy.ChartConfig
 import com.niallermoran.charteasy.ChartPoint
+import com.niallermoran.charteasy.ChartPointCoordinates
+import com.niallermoran.charteasy.CrossHairs
 import com.niallermoran.charteasy.DataProvider
 import com.niallermoran.charteasy.OffsetDp
 import com.niallermoran.charteasy.VerticalAxisConfig
@@ -44,7 +46,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ChartEasySampleAppTheme {
 
-                var caption by rememberSaveable { mutableStateOf("Tap chart area") }
+                var caption by rememberSaveable { mutableStateOf("Tap chart area \n ") }
 
                 // A surface container using the 'background' color from the theme
                 Column(
@@ -57,8 +59,9 @@ class MainActivity : ComponentActivity() {
                         textAlign = TextAlign.Center
                     )
                     Box(modifier = Modifier.padding(12.dp)) {
-                        Chart( onTapped = { point, offset ->
-                            caption = "(${point.xValue},${point.yValue}) - (${offset.left},${offset.top})"
+                        Chart( onTapped = { point ->
+
+                            caption = "(${point.chartPoint.xValue},${point.chartPoint.yValue})\n(${point.offsetLeft.left},${point.offsetLeft.top}, ${point.offsetRight?.top})"
                         })
                     }
                 }
@@ -68,10 +71,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Chart(onTapped: (point:ChartPoint, chartOffset: OffsetDp) ->Unit ) {
+fun Chart(onTapped: (chartPointCoordinates:ChartPointCoordinates) ->Unit ) {
 
     val data = DataProvider()
-    val points = data.samplePoints2
+    val points = data.samplePoints1
     val dateFormatter: SimpleDateFormat = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
 
     Box(modifier = Modifier.padding(12.dp)) {
@@ -107,21 +110,35 @@ fun Chart(onTapped: (point:ChartPoint, chartOffset: OffsetDp) ->Unit ) {
                 }
             ),
             leftAxisConfig = VerticalAxisConfig(
-                type = AxisType.Bar,
+                type = AxisType.Line,
                 dataPoints = points,
                 formatAxisLabel = { y ->
                     String.format( locale = Locale.ENGLISH, "%.1f", y)
                 },
                 maxY = 120f,
-                maxNumberOfLabelsToDisplay = 3,
                 minY = 100f
+            ),
+            rightAxisConfig = VerticalAxisConfig(
+                display = false,
+                type = AxisType.Bar,
+                dataPoints = points,
+                crossHairsConfig = CrossHairs(
+                    display = false
+                ),
+                formatAxisLabel = { y ->
+                    "${String.format( locale = Locale.ENGLISH, "%.1f", y/1000)}km"
+                },
+                minY = 0f
             ),
             bottomAxisConfig = BottomAxisConfig(
                 maxNumberOfLabelsToDisplay = 5,
                 formatAxisLabel = { x->
                     val date = Date( (x*1000).toLong() )
                     dateFormatter.format(date)
-                }
+                },
+                crossHairsConfig = CrossHairs(
+                    display = true
+                )
             )
         )
     }
@@ -131,7 +148,7 @@ fun Chart(onTapped: (point:ChartPoint, chartOffset: OffsetDp) ->Unit ) {
 @Composable
 fun DefaultPreview() {
     ChartEasySampleAppTheme {
-        Chart(onTapped = { point, offset ->
+        Chart(onTapped = { point ->
 
         })
     }

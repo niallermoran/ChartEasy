@@ -1,5 +1,6 @@
 package com.niallermoran.charteasy
 
+import android.graphics.PointF
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.geometry.Offset
@@ -18,34 +19,41 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import getRandomColour
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 
-data class LeftAxisArea( var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp() )
+data class LeftAxisArea(var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp())
 data class RightAxisArea(var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp())
 
-data class BottomAxisArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp() )
-data class PlotArea(var offset: OffsetDp = OffsetDp(),
-                    var size: SizeDp = SizeDp(),
-                    var padding:PaddingValues = PaddingValues(0.dp),
-                    var innerTopLeftOffset: OffsetDp = OffsetDp(),
-                    var barWidth: Dp = 0.dp
-)
-{
+data class BottomAxisArea(var offset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp())
+data class PlotArea(
+    var offset: OffsetDp = OffsetDp(),
+    var size: SizeDp = SizeDp(),
+    var padding: PaddingValues = PaddingValues(0.dp),
+    var innerTopLeftOffset: OffsetDp = OffsetDp(),
+    var barWidth: Dp = 0.dp
+) {
     val innerWidth: Dp
-        get() = size.width -  padding.calculateLeftPadding(LayoutDirection.Ltr) - padding.calculateRightPadding(LayoutDirection.Ltr)
+        get() = size.width - padding.calculateLeftPadding(LayoutDirection.Ltr) - padding.calculateRightPadding(
+            LayoutDirection.Ltr
+        )
 
     val innerHeight: Dp
-        get() = size.height -  padding.calculateTopPadding() - padding.calculateBottomPadding()
+        get() = size.height - padding.calculateTopPadding() - padding.calculateBottomPadding()
 
     /**
      * Gets the Dp offset for a chart point on the inner plot area
      * Remember to convert to Pixels when plotting using density
      */
-    fun getPlotAreaInnerOffsetForChartPoint( chartPoint: ChartPoint, dimensions:Dimensions ) : OffsetDp
-    {
-        val xAxisDp =  ( (chartPoint.xValue - dimensions.dataValues.xMin) / (dimensions.dataValues.xMax - dimensions.dataValues.xMin )) * innerWidth.value
-        val yAxisDp = innerHeight.value - (((chartPoint.yValue - dimensions.dataValues.yMin) / (dimensions.dataValues.yMax - dimensions.dataValues.yMin ) ) * innerHeight.value )
+    fun getPlotAreaInnerOffsetForChartPoint(
+        chartPoint: ChartPoint,
+        dimensions: Dimensions
+    ): OffsetDp {
+        val xAxisDp =
+            ((chartPoint.xValue - dimensions.dataValues.xMin) / (dimensions.dataValues.xMax - dimensions.dataValues.xMin)) * innerWidth.value
+        val yAxisDp =
+            innerHeight.value - (((chartPoint.yValue - dimensions.dataValues.yMin) / (dimensions.dataValues.yMax - dimensions.dataValues.yMin)) * innerHeight.value)
 
         return OffsetDp(
             left = xAxisDp.dp,
@@ -53,39 +61,14 @@ data class PlotArea(var offset: OffsetDp = OffsetDp(),
         )
     }
 
-    /**
-     * Based on x and y Dp values on the inner plot area canvas, find the closest chartpoint
-     */
-    fun getClosestPoint( innerPlotAreaDps: OffsetDp, dimensions: Dimensions ) : ChartPoint
-    {
-        var distanceBetweenPoints = Float.MAX_VALUE
-        var closestPoint: ChartPoint = dimensions.dataValues.points[0]
 
-        dimensions.dataValues.points.forEachIndexed { index, chartPoint ->
-
-            // gets the DP coordinates on the outer plot area for the chart point
-            val pointDp = getPlotAreaInnerOffsetForChartPoint(chartPoint, dimensions)
-
-            // calculate the distance between the the co-ordinates
-            val distanceDp  = sqrt(((innerPlotAreaDps.left - pointDp.left).value * (innerPlotAreaDps.left - pointDp.left).value)
-                    + ((innerPlotAreaDps.top - pointDp.top).value * (innerPlotAreaDps.top - pointDp.top).value))
-
-            if( distanceDp < distanceBetweenPoints )
-            {
-                distanceBetweenPoints = distanceDp
-                closestPoint = chartPoint
-            }
-        }
-
-        return closestPoint
-    }
 }
 
 
-data class AxisLabel( val text: TextLayoutResult, val centerDistanceAlongAxis: Dp )
+data class AxisLabel(val text: TextLayoutResult, val centerDistanceAlongAxis: Dp)
 
-data class OffsetDp(var left:Dp = 0.dp, var top: Dp = 0.dp )
-data class SizeDp( val width:Dp = 0.dp, val height: Dp = 0.dp )
+data class OffsetDp(var left: Dp = 0.dp, var top: Dp = 0.dp)
+data class SizeDp(val width: Dp = 0.dp, val height: Dp = 0.dp)
 
 data class BottomAxisConfig(
 
@@ -134,13 +117,17 @@ data class BottomAxisConfig(
     val display: Boolean = true
 )
 
-data class GridLines( var display: Boolean = true, var color: Color = Color.LightGray, var strokeWidth: Float = 0.1f )
+data class GridLines(
+    var display: Boolean = true,
+    var color: Color = Color.LightGray,
+    var strokeWidth: Float = 0.1f
+)
 
 data class VerticalAxisConfig(
 
     val formatAxisLabel: ((Float) -> String)? = null,
 
-    val gridLines: GridLines =  GridLines(),
+    val gridLines: GridLines = GridLines(),
 
     val showCircles: Boolean = true,
 
@@ -165,7 +152,7 @@ data class VerticalAxisConfig(
     /**
      * Define a fill brush to use to fill the bars or line
      */
-    val fillBrush: Brush = Brush.verticalGradient( listOf(Color.White , Color(getRandomColour() ) ) ),
+    val fillBrush: Brush = Brush.verticalGradient(listOf(Color.White, Color(getRandomColour()))),
 
     /**
      * Apply transparency
@@ -174,7 +161,7 @@ data class VerticalAxisConfig(
 
     val lineColor: Color = Color(getRandomColour()),
     val circleColor: Color = Color(getRandomColour()),
-    val circleRadius: Dp = 2.dp,
+    val circleRadius: Dp = 4.dp,
 
     /**
      * If true draws a bezier curve through the points to smooth corners
@@ -222,7 +209,7 @@ data class VerticalAxisConfig(
     /**
      * Defines th epadding around the labels
      */
-    val labelPadding: PaddingValues = PaddingValues(start=2.dp, end=6.dp),
+    val labelPadding: PaddingValues = PaddingValues(start = 2.dp, end = 6.dp),
 
     val labelStyle: TextStyle = TextStyle(
         color = Color.Gray,
@@ -252,13 +239,15 @@ data class VerticalAxisConfig(
      * Configure the cross hairs when a user taps a point on the screen
      */
     val crossHairsConfig: CrossHairs = CrossHairs()
-)
-{
-    fun getPointLabelText( chartPoint: ChartPoint, rightAxis: Boolean, textMeasurer: TextMeasurer ) : TextLayoutResult?
-    {
-        val label = if(rightAxis) chartPoint.pointLabelRightAxis else chartPoint.pointLabel
+) {
+    fun getPointLabelText(
+        chartPoint: ChartPoint,
+        rightAxis: Boolean,
+        textMeasurer: TextMeasurer
+    ): TextLayoutResult? {
+        val label = if (rightAxis) chartPoint.pointLabelRightAxis else chartPoint.pointLabel
 
-        if( label != null ) {
+        if (label != null) {
             val measure = textMeasurer.measure(
                 label,
                 pointLabelStyle,
@@ -291,17 +280,17 @@ data class ChartConfig(
 
     /**
      * Provide a lambda to respond to user tapping the plot area
-     * @param chartPoint
+     * @param chartPointCoordinates returns the co-ordinates of the left and right values as well as the data values
      * @param offset is the position of the point (in Dp) relative to the chart canvas top left corner
      */
-    val onTap : ( ( chartPoint: ChartPoint, offset: OffsetDp ) -> Unit )? = null,
+    val onTap: ((chartPointCoordinates: ChartPointCoordinates) -> Unit)? = null,
 
     /**
      * Provide a lambda which can be used to draw custom elements on the chart
      * The lambda will be passed a ChartDimensions object containing all of the dimensions of the chart
      * so you can position your custom elements correctly
      */
-    val onDraw: (DrawScope.( chartDimension: ChartDimensions ) -> Unit)? = null
+    val onDraw: (DrawScope.(chartDimension: ChartDimensions) -> Unit)? = null
 )
 
 
@@ -356,37 +345,80 @@ data class Dimensions(
     var rightAxisLabels: ArrayList<AxisLabel> = ArrayList(),
     var leftAxisLabels: ArrayList<AxisLabel> = ArrayList(),
     val bottomAxisLabels: ArrayList<AxisLabel> = ArrayList(),
-    val dataValues: DataValues = DataValues()
-)
+    val dataValues: DataValues = DataValues(),
+
+    /**
+     * The co-ordinates of every point on the inner plot area
+     */
+    val dataCoordinates: ArrayList<ChartPointCoordinates> = ArrayList(),
+
+) {
+    /**
+     * Based on x and y Dp values on the inner plot area canvas, find the closest chartPoint
+     */
+    fun getClosestChartPointToCoordinate(
+        innerPlotAreaCoordinate: OffsetDp
+    ): ChartPointCoordinates {
+        var distanceBetweenPoints = Float.MAX_VALUE
+        var closestPoint: ChartPointCoordinates = dataCoordinates[0]
+        var closestIndex = 0
+
+        Log.d(
+            "getClosestPoint-Tap",
+            "(${innerPlotAreaCoordinate.left},${innerPlotAreaCoordinate.top})"
+        )
+
+        dataCoordinates.forEachIndexed { index, chartPointCoordinates ->
+
+            Log.d(
+                "getClosestPoint-Coord",
+                "${index} - (${chartPointCoordinates.offsetLeft.left},${chartPointCoordinates.offsetLeft.top},${chartPointCoordinates.offsetRight?.top})"
+            )
+
+            val distanceDp =
+                abs(innerPlotAreaCoordinate.left.value - chartPointCoordinates.offsetLeft.left.value)
+
+            if (distanceDp < distanceBetweenPoints) {
+                distanceBetweenPoints = distanceDp
+                closestPoint = chartPointCoordinates
+                closestIndex = index
+            }
+        }
+
+        Log.d(
+            "getClosestPoint-Closest",
+            "${closestIndex} - (${closestPoint.chartPoint.yValue},${closestPoint.chartPoint.yValue})"
+        )
+
+        return closestPoint
+    }
+}
+
+/**
+ * An object that represents a chart point value with cooordinates for left and right values
+ */
+data class ChartPointCoordinates(val chartPoint: ChartPoint, val offsetLeft: OffsetDp, val offsetRight: OffsetDp? = null)
+
 
 /**
  * This object contains all of the calculated dimensions required to position elements outside of the chart. This object wilkl be returned to the user when the plot area is tapped
  */
 data class ChartDimensions(
-    var leftAxisArea:LeftAxisArea = LeftAxisArea(),
-    var bottomAxisArea:BottomAxisArea= BottomAxisArea(),
-    var rightAxisArea:RightAxisArea = RightAxisArea(),
-    var plotArea:PlotArea = PlotArea(),
+    var leftAxisArea: LeftAxisArea = LeftAxisArea(),
+    var bottomAxisArea: BottomAxisArea = BottomAxisArea(),
+    var rightAxisArea: RightAxisArea = RightAxisArea(),
+    var plotArea: PlotArea = PlotArea(),
     var chartSize: SizeDp = SizeDp(0.dp, 0.dp),
 
+    )
+
+data class DataValues(
+    var xMin: Float = 0f,
+    var yMin: Float = 0f,
+    var xMax: Float = 0f,
+    var yMax: Float = 0f,
+    var yMinRight: Float = 0f,
+    var yMaxRight: Float = 0f,
+    var points: List<ChartPoint> = ArrayList()
 )
-{
-
-    /**
-     * Gets the Dp offset for a chart point relative to the top left corner of the chart area
-     * Remember to convert to Pixels when plotting using density
-     */
-    fun getChartOffsetForChartPoint( chartPoint: ChartPoint, dimensions:Dimensions ) : OffsetDp
-    {
-        val xAxisDp =  ( (chartPoint.xValue - dimensions.dataValues.xMin) / (dimensions.dataValues.xMax - dimensions.dataValues.xMin )) * chartSize.width.value
-        val yAxisDp = chartSize.height.value - (((chartPoint.yValue - dimensions.dataValues.yMin) / (dimensions.dataValues.yMax - dimensions.dataValues.yMin ) ) * chartSize.height.value )
-
-        return OffsetDp(
-            left = xAxisDp.dp + dimensions.chart.plotArea.innerTopLeftOffset.left,
-            top = yAxisDp.dp + dimensions.chart.plotArea.innerTopLeftOffset.top
-        )
-    }
-}
-
-data class DataValues(var xMin: Float = 0f, var yMin:Float = 0f, var xMax: Float = 0f, var yMax:Float = 0f, var yMinRight: Float = 0f, var yMaxRight: Float = 0f,  var points: List<ChartPoint> = ArrayList() )
 
