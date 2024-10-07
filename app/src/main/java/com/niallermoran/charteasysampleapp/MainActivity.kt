@@ -18,8 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,11 +26,9 @@ import com.niallermoran.charteasy.AxisType
 import com.niallermoran.charteasy.BottomAxisConfig
 import com.niallermoran.charteasy.Chart
 import com.niallermoran.charteasy.ChartConfig
-import com.niallermoran.charteasy.ChartPoint
 import com.niallermoran.charteasy.ChartPointCoordinates
 import com.niallermoran.charteasy.CrossHairs
 import com.niallermoran.charteasy.DataProvider
-import com.niallermoran.charteasy.OffsetDp
 import com.niallermoran.charteasy.VerticalAxisConfig
 import com.niallermoran.charteasysampleapp.ui.theme.ChartEasySampleAppTheme
 import java.text.SimpleDateFormat
@@ -75,7 +71,7 @@ fun Chart(onTapped: (chartPointCoordinates:ChartPointCoordinates) ->Unit ) {
 
     val data = DataProvider()
     val points = data.samplePoints1
-    val dateFormatter: SimpleDateFormat = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
+    val dateFormatter = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
 
     Box(modifier = Modifier.padding(12.dp)) {
         Chart(
@@ -84,18 +80,14 @@ fun Chart(onTapped: (chartPointCoordinates:ChartPointCoordinates) ->Unit ) {
                 onDraw = { dimensions ->
 
                     // draw a box with some semi-transparent background
-                    val path = Path()
-                    path.moveTo( 0f, 0f )
-                    path.lineTo( size.height, size.width)
-
                     drawRect(
                         topLeft = Offset(
-                            x = dimensions.plotArea.offset.left.toPx(),
-                            y = dimensions.plotArea.innerHeight.toPx() * 3 / 8
+                            x = dimensions.chart.plotArea.offset.left.toPx(),
+                            y = dimensions.chart.plotArea.innerHeight.toPx() * 3 / 8
                         ),
                         size = Size(
-                            width = dimensions.plotArea.size.width.toPx(),
-                            height = dimensions.plotArea.innerHeight.toPx()/4
+                            width = dimensions.chart.plotArea.size.width.toPx(),
+                            height = dimensions.chart.plotArea.innerHeight.toPx()/4
                         ),
                         color = Color(
                             red = 0f,
@@ -105,8 +97,6 @@ fun Chart(onTapped: (chartPointCoordinates:ChartPointCoordinates) ->Unit ) {
                         ),
                         style = Fill
                     )
-
-
                 }
             ),
             leftAxisConfig = VerticalAxisConfig(

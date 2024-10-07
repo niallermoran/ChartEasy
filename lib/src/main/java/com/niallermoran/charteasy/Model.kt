@@ -1,17 +1,13 @@
 package com.niallermoran.charteasy
 
-import android.graphics.PointF
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -20,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import getRandomColour
 import kotlin.math.abs
-import kotlin.math.sqrt
 
 
 data class LeftAxisArea(var topLeftOffset: OffsetDp = OffsetDp(), var size: SizeDp = SizeDp())
@@ -41,25 +36,6 @@ data class PlotArea(
 
     val innerHeight: Dp
         get() = size.height - padding.calculateTopPadding() - padding.calculateBottomPadding()
-
-    /**
-     * Gets the Dp offset for a chart point on the inner plot area
-     * Remember to convert to Pixels when plotting using density
-     */
-    fun getPlotAreaInnerOffsetForChartPoint(
-        chartPoint: ChartPoint,
-        dimensions: Dimensions
-    ): OffsetDp {
-        val xAxisDp =
-            ((chartPoint.xValue - dimensions.dataValues.xMin) / (dimensions.dataValues.xMax - dimensions.dataValues.xMin)) * innerWidth.value
-        val yAxisDp =
-            innerHeight.value - (((chartPoint.yValue - dimensions.dataValues.yMin) / (dimensions.dataValues.yMax - dimensions.dataValues.yMin)) * innerHeight.value)
-
-        return OffsetDp(
-            left = xAxisDp.dp,
-            top = yAxisDp.dp
-        )
-    }
 
 
 }
@@ -290,7 +266,7 @@ data class ChartConfig(
      * The lambda will be passed a ChartDimensions object containing all of the dimensions of the chart
      * so you can position your custom elements correctly
      */
-    val onDraw: (DrawScope.(chartDimension: ChartDimensions) -> Unit)? = null
+    val onDraw: (DrawScope.(dimensions: Dimensions) -> Unit)? = null
 )
 
 
@@ -303,7 +279,6 @@ data class ChartConfig(
  * @param pointLabelRightAxis the text used to display along side the point on the chart for the yValueRightAxis
  * @param pointLabel the text used to display along side the point on the chart for the yValue
  * @param data is any data you want to attach to the point
- * @param bottomAxisLabel is the label to show on the bottom X axis for this data point
  */
 data class ChartPoint(
     val xValue: Float,

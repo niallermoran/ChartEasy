@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -99,7 +98,7 @@ fun Chart(
 @Composable
 private fun DrawUserObjects(
     dimensions: Dimensions,
-    userLambda: DrawScope.(chartDimension: ChartDimensions) -> Unit
+    userLambda: DrawScope.(dimensions: Dimensions) -> Unit
 ) {
     // create a canvas which maps to the inside plot area and
     // provide access to the drawscope so that the user can draw custom objects
@@ -109,7 +108,7 @@ private fun DrawUserObjects(
             .height(dimensions.chart.chartSize.height)
     )
     {
-        userLambda(dimensions.chart)
+        userLambda(dimensions)
     }
 }
 
