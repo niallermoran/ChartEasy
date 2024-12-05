@@ -621,7 +621,6 @@ private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
                     )
                 )
 
-                Log.d("strokewidth", gridLines.strokeWidth.toString())
                 if (gridLines.display) {
                     drawLine(
                         strokeWidth = gridLines.strokeWidth,

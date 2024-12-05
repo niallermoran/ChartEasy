@@ -338,17 +338,10 @@ data class Dimensions(
         var closestPoint: ChartPointCoordinates = dataCoordinates[0]
         var closestIndex = 0
 
-        Log.d(
-            "getClosestPoint-Tap",
-            "(${innerPlotAreaCoordinate.left},${innerPlotAreaCoordinate.top})"
-        )
+
 
         dataCoordinates.forEachIndexed { index, chartPointCoordinates ->
 
-            Log.d(
-                "getClosestPoint-Coord",
-                "${index} - (${chartPointCoordinates.offsetLeft.left},${chartPointCoordinates.offsetLeft.top},${chartPointCoordinates.offsetRight?.top})"
-            )
 
             val distanceDp =
                 abs(innerPlotAreaCoordinate.left.value - chartPointCoordinates.offsetLeft.left.value)
@@ -359,11 +352,6 @@ data class Dimensions(
                 closestIndex = index
             }
         }
-
-        Log.d(
-            "getClosestPoint-Closest",
-            "${closestIndex} - (${closestPoint.chartPoint.yValue},${closestPoint.chartPoint.yValue})"
-        )
 
         return closestPoint
     }

@@ -172,10 +172,7 @@ private fun getPointCoOrdinates(
         }
     }
 
-    Log.d(
-        "getPointCoOrdinatesDp",
-        "(${xCoord},${yCoord})"
-    )
+
 
 
     val offset = OffsetDp(left = xCoord, top = yCoord)

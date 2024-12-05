@@ -17,3 +17,4 @@ local.properties
 *.log
 .log
 /lib/gradle.properties
+/.idea/runConfigurations.xml
