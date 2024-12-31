@@ -1,7 +1,5 @@
 package com.niallermoran.charteasy
 
-import android.graphics.PointF
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -175,7 +173,7 @@ private fun DrawScope.drawBarPlot(
                 val barLeftX = (barCenterDistanceAlongXAxis - barWidth / 2).toPx()
                 val barRightX = (barCenterDistanceAlongXAxis + barWidth / 2).toPx()
                 val barTopY =
-                    (plotAreaHeight - (plotAreaHeight * (yValue - yMin) / (yMax - yMin))).toPx()
+                    (plotAreaHeight - (plotAreaHeight * (yValue - yMin).toFloat() / (yMax - yMin).toFloat())).toPx()
                 val barBottomY = plotAreaHeight.toPx()
 
                 // draw bar
@@ -196,7 +194,7 @@ private fun DrawScope.drawBarPlot(
                         path = path,
                         brush = axisConfig.fillBrush,
                         style = Fill,
-                        alpha = axisConfig.fillAlpha
+                        alpha = axisConfig.fillAlpha.toFloat()
                     )
                 }
 
@@ -243,11 +241,11 @@ private fun DrawScope.drawLinePlot(
         // get the pixle co-ordniates for every point
         for (point in points) {
             // actual point add to path
-            val x = plotAreaWidth * (point.xValue - dimensions.dataValues.xMin) / (xMax - xMin)
+            val x = plotAreaWidth * (point.xValue - dimensions.dataValues.xMin).toFloat() / (xMax - xMin).toFloat()
             val yValue = if (rightAxis) point.yValueRightAxis else point.yValue
 
             if (yValue != null) {
-                val y = plotAreaHeight - (plotAreaHeight * (yValue - yMin) / (yMax - yMin))
+                val y = plotAreaHeight - (plotAreaHeight * (yValue - yMin).toFloat() / (yMax - yMin).toFloat())
                 linePoints.add(PointF(x.toPx(), y.toPx()))
             }
         }
@@ -349,7 +347,7 @@ private fun DrawScope.drawLinePlot(
                 path = pathFill,
                 brush = axisConfig.fillBrush,
                 style = Fill,
-                alpha = axisConfig.fillAlpha,
+                alpha = axisConfig.fillAlpha.toFloat(),
             )
         }
 
@@ -379,7 +377,7 @@ private fun DrawScope.drawLinePlot(
 
                         drawCircle(
                             color = axisConfig.circleColor,
-                            center = Offset(x, y),
+                            center = Offset(x.toFloat(), y.toFloat()),
                             radius = axisConfig.circleRadius.value,
 
                             )
@@ -406,8 +404,8 @@ private fun DrawScope.drawLinePlot(
                 drawText(
                     textLayoutResult = text,
                     topLeft = Offset(
-                        x = x,
-                        y = y
+                        x = x.toFloat(),
+                        y = y.toFloat()
                     )
                 )
             }
@@ -479,7 +477,7 @@ private fun DrawBottomAxisArea(config: Config, dimensions: Dimensions) {
 
             if (gridLines.display) {
                 drawLine(
-                    strokeWidth = gridLines.strokeWidth,
+                    strokeWidth = gridLines.strokeWidth.toFloat(),
                     color = gridLines.color,
                     start = Offset(pxTick, 0f),
                     end = Offset(
@@ -548,7 +546,7 @@ private fun DrawLeftAxisArea(config: Config, dimensions: Dimensions) {
 
             if (gridLines.display) {
                 drawLine(
-                    strokeWidth = gridLines.strokeWidth,
+                    strokeWidth = gridLines.strokeWidth.toFloat(),
                     color = gridLines.color,
                     start = Offset(widthPx, pxTick),
                     end = Offset(
@@ -623,7 +621,7 @@ private fun DrawRightAxisArea(config: Config, dimensions: Dimensions) {
 
                 if (gridLines.display) {
                     drawLine(
-                        strokeWidth = gridLines.strokeWidth,
+                        strokeWidth = gridLines.strokeWidth.toFloat(),
                         color = gridLines.color,
                         start = Offset(0f, pxTick),
                         end = Offset(

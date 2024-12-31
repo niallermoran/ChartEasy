@@ -1,19 +1,28 @@
 package com.niallermoran.charteasy
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.*
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -52,16 +61,15 @@ private fun DrawPieChart(config: PieChartConfig, modifier: Modifier = Modifier) 
         val points = config.dataPoints.sortedBy { it.yValue }.filter { it.yValue > 0 }
         val sumOfY = points.sumOf { it.yValue.toDouble() }.toFloat()
 
-        if( sumOfY == 0.0f)
-        {
-            Box(modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxSize()
-                ) {
+        if (sumOfY == 0.0f) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxSize()
+            ) {
                 Text("No Data", modifier = Modifier.align(Alignment.Center))
             }
-        }
-        else {
+        } else {
 
             Canvas(modifier = Modifier
                 .align(Alignment.Center)
@@ -92,7 +100,7 @@ private fun DrawPieChart(config: PieChartConfig, modifier: Modifier = Modifier) 
                                 alpha = chartPoint.alpha,
                                 topLeft = Offset(x = 0f, y = 0f),
                                 startAngle = startAngle,
-                                sweepAngle = sweepAngle,
+                                sweepAngle = sweepAngle.toFloat(),
                                 useCenter = true,
                                 size = Size(diameter, diameter)
                             )
@@ -163,7 +171,7 @@ private fun DrawPieChart(config: PieChartConfig, modifier: Modifier = Modifier) 
                             }
 
 
-                            startAngle += sweepAngle
+                            startAngle += sweepAngle.toFloat()
 
                         }
 
@@ -191,7 +199,7 @@ data class PieChartConfig(
     /**
      * The height to use for the pie-chart
      */
-    var chartHeight:Dp = 300.dp
+    var chartHeight: Dp = 300.dp
 )
 
 
@@ -201,10 +209,15 @@ enum class PieChartLabelPosition {
 
 
 data class PiePoint(
-    val yValue: Float,
+    val yValue: Double,
     val label: String = yValue.toString(),
     val labelPosition: PieChartLabelPosition = PieChartLabelPosition.INSIDE,
-    val colour: Color =  Color ( red = Random.nextInt(256),  Random.nextInt(256), Random.nextInt(256), Random.nextInt(256) ),
+    val colour: Color = Color(
+        red = Random.nextInt(256),
+        Random.nextInt(256),
+        Random.nextInt(256),
+        Random.nextInt(256)
+    ),
     val labelStyle: TextStyle = TextStyle(
         fontSize = 16.sp,
         textAlign = TextAlign.Center,
@@ -212,5 +225,5 @@ data class PiePoint(
     ),
     val overflow: TextOverflow = TextOverflow.Visible,
     val maxLinesForLabel: Int = 1,
-    val alpha:Float = 0.9f
+    val alpha: Float = 0.9f
 )

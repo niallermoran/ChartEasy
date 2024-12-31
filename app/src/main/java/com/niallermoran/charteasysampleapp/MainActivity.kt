@@ -105,8 +105,8 @@ fun Chart(onTapped: (chartPointCoordinates:ChartPointCoordinates) ->Unit ) {
                 formatAxisLabel = { y ->
                     String.format( locale = Locale.ENGLISH, "%.1f", y)
                 },
-                maxY = 120f,
-                minY = 100f
+                maxY = 120.0,
+                minY = 100.0
             ),
             rightAxisConfig = VerticalAxisConfig(
                 display = false,
@@ -118,7 +118,7 @@ fun Chart(onTapped: (chartPointCoordinates:ChartPointCoordinates) ->Unit ) {
                 formatAxisLabel = { y ->
                     "${String.format( locale = Locale.ENGLISH, "%.1f", y/1000)}km"
                 },
-                minY = 0f
+                minY = 0.0
             ),
             bottomAxisConfig = BottomAxisConfig(
                 maxNumberOfLabelsToDisplay = 5,

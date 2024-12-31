@@ -1,7 +1,6 @@
-import android.graphics.Color
-import android.graphics.PointF
-import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -19,6 +18,7 @@ import com.niallermoran.charteasy.PlotArea
 import com.niallermoran.charteasy.RightAxisArea
 import com.niallermoran.charteasy.SizeDp
 import com.niallermoran.charteasy.VerticalAxisConfig
+import com.niallermoran.charteasy.toPrecision
 import kotlin.math.ceil
 import kotlin.random.Random
 
@@ -46,12 +46,12 @@ fun calculateDimensions(
         config.leftAxisConfig.minY ?: dimensions.dataValues.points.minOf { it.yValue }
     dimensions.dataValues.yMax =
         config.leftAxisConfig.maxY ?: dimensions.dataValues.points.maxOf { it.yValue }
-    dimensions.dataValues.yMinRight = config.rightAxisConfig?.minY
+    dimensions.dataValues.yMinRight = (config.rightAxisConfig?.minY
         ?: if (pointsWithRightValue.isEmpty()) 0f else dimensions.dataValues.points.filter { it.yValueRightAxis != null }
-            .minOf { it.yValueRightAxis!! }
-    dimensions.dataValues.yMaxRight = config.rightAxisConfig?.maxY
+            .minOf { it.yValueRightAxis!! }) as Double
+    dimensions.dataValues.yMaxRight = (config.rightAxisConfig?.maxY
         ?: if (pointsWithRightValue.isEmpty()) 0f else dimensions.dataValues.points.filter { it.yValueRightAxis != null }
-            .maxOf { it.yValueRightAxis!! }
+            .maxOf { it.yValueRightAxis!! }) as Double
     dimensions.dataValues.xMin = dimensions.dataValues.points.minOf { it.xValue }
     dimensions.dataValues.xMax = dimensions.dataValues.points.maxOf { it.xValue }
 
@@ -82,8 +82,8 @@ fun calculateDimensions(
 }
 
 fun getRandomColour(): Int {
-    val random = Color.argb(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
-    return random
+    val random = Color(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
+    return random.toArgb()
 }
 
 /**
@@ -118,7 +118,7 @@ private fun calculatePointCoOrdinates(config: Config, dimensions: Dimensions) {
         )
 
         val yRight = chartPoint.yValueRightAxis
-        val offsetRight: OffsetDp? = if( yRight == null) null else getPointCoOrdinates(
+        val offsetRight: OffsetDp? = if (yRight == null) null else getPointCoOrdinates(
             axisType,
             innerPlotSize,
             x,
@@ -131,11 +131,13 @@ private fun calculatePointCoOrdinates(config: Config, dimensions: Dimensions) {
             xDpBetweenBarCenters
         )
 
-        dimensions.dataCoordinates.add(ChartPointCoordinates(
-            chartPoint = chartPoint,
-            offsetLeft = offsetLeft,
-            offsetRight = offsetRight
-        ))
+        dimensions.dataCoordinates.add(
+            ChartPointCoordinates(
+                chartPoint = chartPoint,
+                offsetLeft = offsetLeft,
+                offsetRight = offsetRight
+            )
+        )
 
 
     }
@@ -144,12 +146,12 @@ private fun calculatePointCoOrdinates(config: Config, dimensions: Dimensions) {
 private fun getPointCoOrdinates(
     axisType: AxisType,
     innerPlotSize: SizeDp,
-    x: Float,
-    xMin: Float,
-    xMax: Float,
-    yMax: Float,
-    y: Float,
-    yMin: Float,
+    x: Double,
+    xMin: Double,
+    xMax: Double,
+    yMax: Double,
+    y: Double,
+    yMin: Double,
     index: Int,
     xDpBetweenBarCenters: Dp
 ): OffsetDp {
@@ -158,8 +160,8 @@ private fun getPointCoOrdinates(
 
     when (axisType) {
         AxisType.Line -> {
-            xCoord = innerPlotSize.width * ((x - xMin) / (xMax - xMin))
-            yCoord = innerPlotSize.height * ((yMax - y) / (yMax - yMin))
+            xCoord = innerPlotSize.width * ((x - xMin) / (xMax - xMin)).toFloat()
+            yCoord = innerPlotSize.height * ((yMax - y) / (yMax - yMin)).toFloat()
         }
 
         /**
@@ -168,11 +170,9 @@ private fun getPointCoOrdinates(
          */
         AxisType.Bar -> {
             xCoord = index.dp * xDpBetweenBarCenters.value
-            yCoord = innerPlotSize.height * ((yMax - y) / (yMax - yMin))
+            yCoord = innerPlotSize.height * ((yMax - y) / (yMax - yMin)).toFloat()
         }
     }
-
-
 
 
     val offset = OffsetDp(left = xCoord, top = yCoord)
@@ -207,11 +207,8 @@ private fun calculateLabels(
             val yValue =
                 dimensions.dataValues.yMin + ((dimensions.dataValues.yMax - dimensions.dataValues.yMin) * i / (labelCount - 1))
 
-            val labelText = if (formatter == null) String.format(
-                java.util.Locale.ENGLISH,
-                "%.2f",
-                yValue
-            ) else formatter(yValue)
+            val labelText =
+                if (formatter == null) yValue.toPrecision(1).toString() else formatter(yValue)
 
             val textMeasure = textMeasurer.measure(labelText, style = axisConfig.labelStyle)
             val label = AxisLabel(text = textMeasure, distanceAlongYAxis)
@@ -238,12 +235,8 @@ private fun calculateLabels(
             val yValue =
                 dimensions.dataValues.yMinRight + ((dimensions.dataValues.yMaxRight - dimensions.dataValues.yMinRight) * i / (labelCount - 1))
 
-            val labelText = if (formatter == null) String.format(
-                java.util.Locale.ENGLISH,
-                "%.2f",
-                yValue
-            ) else formatter(yValue)
-
+            val labelText =
+                if (formatter == null) yValue.toPrecision(1).toString() else formatter(yValue)
             val textMeasure = textMeasurer.measure(labelText, style = axisConfig.labelStyle)
             val label = AxisLabel(text = textMeasure, distanceAlongYAxis)
 
@@ -274,7 +267,7 @@ private fun calculateLabels(
 
                 // we can only show up to maxLabelsToDisplay, but we will alwyas show first and last
                 var showLabel =
-                    if (index == 0 || index == dimensions.dataValues.points.size - 1) true else false
+                    index == 0 || index == dimensions.dataValues.points.size - 1
 
                 // calculate how many labels should be displayed for every data point
                 val skip =
@@ -286,11 +279,9 @@ private fun calculateLabels(
 
                 if (showLabel == true) {
                     val distanceAlongXAxis = index.dp * distanceBetweenTicks.value
-                    val labelText = if (bottomAxisFormatter == null) String.format(
-                        java.util.Locale.ENGLISH,
-                        "%.2f",
-                        chartPoint.xValue
-                    ) else bottomAxisFormatter(chartPoint.xValue)
+                    val labelText =
+                        if (bottomAxisFormatter == null) chartPoint.xValue.toPrecision(1)
+                            .toString() else bottomAxisFormatter(chartPoint.xValue)
                     val textMeasure =
                         textMeasurer.measure(labelText, style = config.bottomAxisConfig.labelStyle)
                     dimensions.bottomAxisLabels.add(
@@ -311,12 +302,8 @@ private fun calculateLabels(
                 val xValue =
                     dimensions.dataValues.xMin + ((dimensions.dataValues.xMax - dimensions.dataValues.xMin) * i / (bottomAxisLabelCount - 1))
 
-                val labelText = if (bottomAxisFormatter == null) String.format(
-                    java.util.Locale.ENGLISH,
-                    "%.2f",
-                    xValue
-                ) else bottomAxisFormatter(xValue)
-
+                val labelText = if (bottomAxisFormatter == null) xValue.toPrecision(1)
+                    .toString() else bottomAxisFormatter(xValue)
                 val textMeasure =
                     textMeasurer.measure(labelText, style = config.bottomAxisConfig.labelStyle)
                 val label = AxisLabel(text = textMeasure, distanceAlongXAxis)
@@ -353,11 +340,8 @@ private fun getVerticalAxisLabels(
         val yValue =
             dimensions.dataValues.yMin + ((dimensions.dataValues.yMax - dimensions.dataValues.xMin) * i / (labelCount - 1))
 
-        val labelText = if (formatter == null) String.format(
-            java.util.Locale.ENGLISH,
-            "%.2f",
-            yValue
-        ) else formatter(yValue)
+        val labelText =
+            if (formatter == null) yValue.toPrecision(1).toString() else formatter(yValue)
 
         val textMeasure = textMeasurer.measure(labelText, style = config.labelStyle)
         val label = AxisLabel(text = textMeasure, distanceAlongYAxis)
@@ -383,15 +367,15 @@ private fun calculateAxisDimensions(
 
     val yTextLeft = if (formatLeftAxisLabelLambda != null) formatLeftAxisLabelLambda(
         dimensions.dataValues.yMax
-    ) else String.format(java.util.Locale.ENGLISH, "%.2f", dimensions.dataValues.yMax)
+    ) else dimensions.dataValues.yMax.toPrecision(1).toString()
 
     val yTextRight = if (formatRightAxisLabelLambda != null) formatRightAxisLabelLambda(
         dimensions.dataValues.yMax
-    ) else String.format(java.util.Locale.ENGLISH, "%.2f", dimensions.dataValues.yMaxRight)
+    ) else dimensions.dataValues.yMaxRight.toPrecision(1).toString()
 
     val xText = if (formatBottomAxisLabelLambda != null) formatBottomAxisLabelLambda(
         dimensions.dataValues.xMax
-    ) else String.format(java.util.Locale.ENGLISH, "%.2f", dimensions.dataValues.xMax)
+    ) else dimensions.dataValues.xMax.toPrecision(1).toString()
 
     // calculate bottom axis height
     var bottomAxisHeight =
@@ -510,12 +494,12 @@ private fun calculateAxisDimensions(
         // calculate auto padding
         if (config.chartConfig.plotAreaPadding == null) {
             val divisor = (numberOfBars / barWidthFraction) + (numberOfBars + 1)
-            val space = plotAreaOuterWidth / divisor
+            val space = plotAreaOuterWidth / divisor.toFloat()
             padding = PaddingValues(
                 start = space,
                 end = space
             )
-            barWidth = space / barWidthFraction
+            barWidth = space / barWidthFraction.toFloat()
         }
 
         // calculate padding when defined
@@ -525,12 +509,12 @@ private fun calculateAxisDimensions(
                     LayoutDirection.Ltr
                 ) - config.chartConfig.plotAreaPadding.calculateRightPadding(LayoutDirection.Ltr)
             val divisor = (numberOfBars / barWidthFraction) + numberOfBars.toFloat() - 1
-            val space = innerWidth / divisor
+            val space = innerWidth / divisor.toFloat()
             padding = PaddingValues(
                 start = config.chartConfig.plotAreaPadding.calculateLeftPadding(LayoutDirection.Ltr),
                 end = config.chartConfig.plotAreaPadding.calculateRightPadding(LayoutDirection.Ltr)
             )
-            barWidth = space / barWidthFraction
+            barWidth = space / barWidthFraction.toFloat()
         }
     }
 

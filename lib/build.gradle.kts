@@ -66,6 +66,7 @@ kotlin {
             implementation(compose.material)
             implementation(compose.ui)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
         }
