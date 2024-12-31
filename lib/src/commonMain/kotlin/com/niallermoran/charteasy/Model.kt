@@ -1,6 +1,5 @@
 package com.niallermoran.charteasy
 
-import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -54,7 +53,7 @@ data class BottomAxisConfig(
     val crossHairsConfig: CrossHairs = CrossHairs(),
 
     val gridLines: GridLines = GridLines(),
-    val formatAxisLabel: ((Float) -> String)? = null,
+    val formatAxisLabel: ((Double) -> String)? = null,
     val axisColor: Color = Color.LightGray,
     val axisStrokeWidth: Dp = 1.dp,
     val tickStrokeWidth: Dp = 1.dp,
@@ -96,12 +95,12 @@ data class BottomAxisConfig(
 data class GridLines(
     var display: Boolean = true,
     var color: Color = Color.LightGray,
-    var strokeWidth: Float = 0.1f
+    var strokeWidth: Double = 0.1
 )
 
 data class VerticalAxisConfig(
 
-    val formatAxisLabel: ((Float) -> String)? = null,
+    val formatAxisLabel: ((Double) -> String)? = null,
 
     val gridLines: GridLines = GridLines(),
 
@@ -133,7 +132,7 @@ data class VerticalAxisConfig(
     /**
      * Apply transparency
      */
-    val fillAlpha: Float = 1f,
+    val fillAlpha: Double = 1.0,
 
     val lineColor: Color = Color(getRandomColour()),
     val circleColor: Color = Color(getRandomColour()),
@@ -173,14 +172,14 @@ data class VerticalAxisConfig(
      * Set the minimum value used for the left Y axis to control how much of the plot area the graph fills
      * To use the min value from your data points do not set this or set to zero, which will force the chart to fill the full plot area
      */
-    val minY: Float? = null,
+    val minY: Double? = null,
 
 
     /**
      * Set the maximum value used for the left Y axis to control how much of the plot area the graph fills
      * To use the max value from your data points do not set this or set to zero, , which will force the chart to fill the full plot area
      */
-    val maxY: Float? = null,
+    val maxY: Double? = null,
 
     /**
      * Defines th epadding around the labels
@@ -252,7 +251,7 @@ data class ChartConfig(
      * e.g. 1.0 means the space between bars will be the width of a bar
      * the default is 0.5, so the space would be half the bar width
      */
-    val barChartFraction: Float = 0.5f,
+    val barChartFraction: Double = 0.5,
 
     /**
      * Provide a lambda to respond to user tapping the plot area
@@ -281,9 +280,9 @@ data class ChartConfig(
  * @param data is any data you want to attach to the point
  */
 data class ChartPoint(
-    val xValue: Float,
-    val yValue: Float,
-    val yValueRightAxis: Float? = null,
+    val xValue: Double,
+    val yValue: Double,
+    val yValueRightAxis: Double? = null,
     val data: Any? = null,
     val pointLabel: String? = null,
     val pointLabelRightAxis: String? = null,
@@ -376,12 +375,12 @@ data class ChartDimensions(
     )
 
 data class DataValues(
-    var xMin: Float = 0f,
-    var yMin: Float = 0f,
-    var xMax: Float = 0f,
-    var yMax: Float = 0f,
-    var yMinRight: Float = 0f,
-    var yMaxRight: Float = 0f,
+    var xMin: Double = 0.0,
+    var yMin: Double = 0.0,
+    var xMax: Double = 0.0,
+    var yMax: Double = 0.0,
+    var yMinRight: Double = 0.0,
+    var yMaxRight: Double = 0.0,
     var points: List<ChartPoint> = ArrayList()
 )
 
