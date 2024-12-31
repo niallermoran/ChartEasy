@@ -12,12 +12,12 @@ plugins {
 
 publishing {
     publications {
-        register( "kotlinMultiplatformPublication", MavenPublication::class.java) {
+        register( "release", MavenPublication::class.java) {
             groupId = "com.niallermoran"
             artifactId = "charteasy"
             version ="1.0"
             afterEvaluate {
-                from(components.findByName("kotlinMultiplatform"))
+                from(components.findByName("release"))
             }
         }
     }
