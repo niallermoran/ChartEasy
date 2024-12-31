@@ -1,6 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+
+    alias(libs.plugins.kotlin.compose)
 }
 
 apply plugin: 'com.android.application'
@@ -79,6 +81,7 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
     implementation project(':lib')
+
 }
 
 

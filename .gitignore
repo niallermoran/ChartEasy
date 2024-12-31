@@ -18,3 +18,4 @@ local.properties
 .log
 /lib/gradle.properties
 /.idea/runConfigurations.xml
+/.kotlin/metadata

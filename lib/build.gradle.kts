@@ -1,37 +1,23 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
-}
-
-apply plugin: 'maven-publish'
-
-def getVersionName = { ->
-    return "1.0"
-}
-
-def getArtifactId = { ->
-    return "charteasy"
-}
-
-def getGroupId = { ->
-    return "com.niallermoran"
-}
-
-// Prepare URL of maven package.
-// Replace 'mohitrajput987' with your github repo's username or organization name.
-// Replace 'analytics-sdk-android' with the name of github repo
-def getGitHubUrl = { ->
-    return "https://maven.pkg.github.com/niallermoran/charteasy"
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialisation)
+    `maven-publish`
 }
 
 publishing {
     publications {
-        release(MavenPublication) {
-            groupId getGroupId()
-            artifactId getArtifactId()
-            version getVersionName()
+        register( "kotlinMultiplatformPublication", MavenPublication::class.java) {
+            groupId = "com.niallermoran"
+            artifactId = "charteasy"
+            version ="1.0"
             afterEvaluate {
-                from components.release
+                from(components.findByName("kotlinMultiplatform"))
             }
         }
     }
@@ -40,22 +26,70 @@ publishing {
         /**
          * Use this when publishing for public use on jitpack
          */
-       maven { url "https://jitpack.io" }
+        maven { url = uri("https://jitpack.io") }
 
-        /**
-         * Uncomment when publishing to GitHub
-         */
-     /*   maven {
-            name = "GitHubPackages"
-
-            url = uri(getGitHubUrl())
-            credentials {
-                username = githubusername_publisher
-                password = githubtoken_publisher
-            }
-        }*/
     }
 }
+
+
+kotlin {
+
+
+    androidTarget {
+        compilations.all {
+            compileTaskProvider.configure {
+                @OptIn(ExperimentalKotlinGradlePluginApi::class) compilerOptions {
+                    jvmTarget.set(JvmTarget.JVM_17)
+                }
+            }
+        }
+    }
+
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach {
+        it.binaries.framework {
+            baseName = "shared"
+            isStatic = true
+        }
+    }
+
+    sourceSets {
+
+        androidMain.dependencies {
+        }
+
+        iosMain.dependencies {
+        }
+
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material)
+            implementation(compose.ui)
+            implementation(libs.kotlinx.coroutines.core)
+        }
+        commonTest.dependencies {
+        }
+        getByName("commonTest") {
+            dependencies {
+                implementation(libs.kotlinx.coroutines.core)
+            }
+        }
+    }
+}
+
+android {
+    namespace = "com.github.niallermoran.charts"
+    compileSdk = 34
+    defaultConfig {
+        minSdk = 26
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+/*
 
 android {
     namespace 'com.github.niallermoran.charts'
@@ -143,3 +177,6 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
 
 }
+
+
+ */
